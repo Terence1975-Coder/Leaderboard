@@ -740,9 +740,277 @@
             </div>
         </div>
 
-        <!-- Export & Sync Section -->
+        <!-- Complete Dashboard Field Management Section -->
         <div class="section">
-            <h2>💾 Export & Sync Operations</h2>
+            <h2>🔧 Complete Dashboard Field Management</h2>
+            <div class="instructions">
+                <h3>🎛️ Universal Control Panel:</h3>
+                <p>Manage ALL fields from your GitHub dashboard (terence1975-coder.github.io/Leaderboard). Every change syncs instantly to your live dashboard.</p>
+            </div>
+            
+            <div class="section-grid">
+                <div class="card">
+                    <h3>📊 Dashboard Title & Header</h3>
+                    <label>Main Dashboard Title:</label>
+                    <input type="text" class="editable" value="🎯 Prospecting Plan Dashboard" id="dashboard-title">
+                    <label>Subtitle/Description:</label>
+                    <textarea class="editable textarea" id="dashboard-subtitle" placeholder="Real-time Sales Tracking & Analytics">Research and identify potential contacts
+Craft and send personalized outreach emails
+Direct phone outreach - stay in the zone! 😊
+Document outcomes and follow-up requirements
+Action notes and maintain relationships</textarea>
+                    <label>Company Logo URL:</label>
+                    <input type="url" class="editable" value="" id="dashboard-logo" placeholder="https://your-logo-url.com">
+                </div>
+                
+                <div class="card">
+                    <h3>🎭 Dashboard Branding Colors</h3>
+                    <label>Primary Brand Color:</label>
+                    <input type="color" class="color-input" value="#667eea" id="brand-primary">
+                    <label>Secondary Color:</label>
+                    <input type="color" class="color-input" value="#764ba2" id="brand-secondary">
+                    <label>Success Color (Green):</label>
+                    <input type="color" class="color-input" value="#4caf50" id="brand-success">
+                    <label>Warning Color (Orange):</label>
+                    <input type="color" class="color-input" value="#ff9800" id="brand-warning">
+                    <label>Danger Color (Red):</label>
+                    <input type="color" class="color-input" value="#f44336" id="brand-danger">
+                </div>
+                
+                <div class="card">
+                    <h3>⏱️ Dashboard Behavior Settings</h3>
+                    <label>Auto-Refresh Interval (seconds):</label>
+                    <input type="number" class="editable" value="30" id="refresh-interval" min="5" max="300">
+                    <label>Animation Speed:</label>
+                    <select class="editable" id="animation-speed-select">
+                        <option value="fast">Fast (0.3s)</option>
+                        <option value="normal" selected>Normal (0.6s)</option>
+                        <option value="slow">Slow (1.2s)</option>
+                    </select>
+                    <label>Sound Effects:</label>
+                    <select class="editable" id="sound-effects">
+                        <option value="enabled" selected>Enabled</option>
+                        <option value="disabled">Disabled</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Team Data Management -->
+        <div class="section">
+            <h2>👥 Advanced Team Data Management</h2>
+            <div class="instructions">
+                <h3>🔧 Complete Team Control:</h3>
+                <p>Manage all team member data, performance metrics, and individual settings. Add/remove team members and customize their profiles.</p>
+            </div>
+            
+            <div class="section-grid">
+                <div class="card">
+                    <h3>➕ Add New Team Member</h3>
+                    <input type="text" class="editable" placeholder="Team Member Name" id="new-member-name">
+                    <input type="email" class="editable" placeholder="Email Address" id="new-member-email">
+                    <input type="text" class="editable" placeholder="Job Title/Role" id="new-member-role">
+                    <input type="color" class="color-input" value="#667eea" id="new-member-color">
+                    <button class="btn btn-primary" onclick="addTeamMember()" style="margin-top: 15px;">
+                        ➕ Add Team Member
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h3>🎯 Global Team Settings</h3>
+                    <label>Team Name:</label>
+                    <input type="text" class="editable" value="Sales Prospecting Team" id="team-name">
+                    <label>Team Goal Period:</label>
+                    <select class="editable" id="team-goal-period">
+                        <option value="weekly" selected>Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                    </select>
+                    <label>Goal Reset Date:</label>
+                    <input type="date" class="date-input" id="goal-reset-date">
+                </div>
+                
+                <div class="card">
+                    <h3>📊 Leaderboard Display</h3>
+                    <label>Sort Order:</label>
+                    <select class="editable" id="leaderboard-sort">
+                        <option value="total-score">Total Score</option>
+                        <option value="conversions">Conversions</option>
+                        <option value="calls">Calls Made</option>
+                        <option value="progress" selected>Progress %</option>
+                    </select>
+                    <label>Show Ranking Numbers:</label>
+                    <select class="editable" id="show-rankings">
+                        <option value="yes" selected>Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                    <label>Display Avatar Images:</label>
+                    <select class="editable" id="show-avatars">
+                        <option value="yes" selected>Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extended Team Performance Table -->
+        <div class="section">
+            <h2>📈 Extended Team Performance Data</h2>
+            <div class="instructions">
+                <h3>📋 Comprehensive Team Metrics:</h3>
+                <p>Update all performance data that feeds into your dashboard leaderboard. All metrics sync in real-time.</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Team Member</th>
+                        <th>🎣 Interested</th>
+                        <th>🥅 Conversions</th>
+                        <th>📞 Calls Made</th>
+                        <th>📧 Emails Sent</th>
+                        <th>📝 Notes Taken</th>
+                        <th>⭐ Score</th>
+                        <th>🎯 Personal Goal</th>
+                        <th>📊 Progress %</th>
+                        <th>🔄 Conversion Rate</th>
+                        <th>🎨 Color Theme</th>
+                        <th>⚙️ Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="team-performance-table">
+                    <tr data-member="robert">
+                        <td><strong>🎯 Robert</strong></td>
+                        <td><input type="number" class="editable" value="5" data-field="interested" min="0"></td>
+                        <td><input type="number" class="editable" value="2" data-field="conversions" min="0"></td>
+                        <td><input type="number" class="editable" value="15" data-field="calls" min="0"></td>
+                        <td><input type="number" class="editable" value="15" data-field="emails" min="0"></td>
+                        <td><input type="number" class="editable" value="12" data-field="notes" min="0"></td>
+                        <td class="score-display">49</td>
+                        <td><input type="number" class="editable" value="40" data-field="goal" min="1"></td>
+                        <td class="progress-display">37.5%</td>
+                        <td class="conversion-display">13.3%</td>
+                        <td><input type="color" class="color-input" value="#ff6b6b" data-field="color"></td>
+                        <td><button class="btn btn-danger btn-sm" onclick="removeTeamMember('robert')">🗑️</button></td>
+                    </tr>
+                    <tr data-member="terence">
+                        <td><strong>🌟 Terence</strong></td>
+                        <td><input type="number" class="editable" value="3" data-field="interested" min="0"></td>
+                        <td><input type="number" class="editable" value="1" data-field="conversions" min="0"></td>
+                        <td><input type="number" class="editable" value="12" data-field="calls" min="0"></td>
+                        <td><input type="number" class="editable" value="12" data-field="emails" min="0"></td>
+                        <td><input type="number" class="editable" value="10" data-field="notes" min="0"></td>
+                        <td class="score-display">38</td>
+                        <td><input type="number" class="editable" value="40" data-field="goal" min="1"></td>
+                        <td class="progress-display">30.0%</td>
+                        <td class="conversion-display">8.3%</td>
+                        <td><input type="color" class="color-input" value="#4ecdc4" data-field="color"></td>
+                        <td><button class="btn btn-danger btn-sm" onclick="removeTeamMember('terence')">🗑️</button></td>
+                    </tr>
+                    <tr data-member="lynette">
+                        <td><strong>💫 Lynette</strong></td>
+                        <td><input type="number" class="editable" value="7" data-field="interested" min="0"></td>
+                        <td><input type="number" class="editable" value="3" data-field="conversions" min="0"></td>
+                        <td><input type="number" class="editable" value="18" data-field="calls" min="0"></td>
+                        <td><input type="number" class="editable" value="18" data-field="emails" min="0"></td>
+                        <td><input type="number" class="editable" value="15" data-field="notes" min="0"></td>
+                        <td class="score-display">61</td>
+                        <td><input type="number" class="editable" value="40" data-field="goal" min="1"></td>
+                        <td class="progress-display">45.0%</td>
+                        <td class="conversion-display">16.7%</td>
+                        <td><input type="color" class="color-input" value="#45b7d1" data-field="color"></td>
+                        <td><button class="btn btn-danger btn-sm" onclick="removeTeamMember('lynette')">🗑️</button></td>
+                    </tr>
+                    <tr data-member="sam">
+                        <td><strong>⭐ Sam</strong></td>
+                        <td><input type="number" class="editable" value="4" data-field="interested" min="0"></td>
+                        <td><input type="number" class="editable" value="2" data-field="conversions" min="0"></td>
+                        <td><input type="number" class="editable" value="10" data-field="calls" min="0"></td>
+                        <td><input type="number" class="editable" value="10" data-field="emails" min="0"></td>
+                        <td><input type="number" class="editable" value="8" data-field="notes" min="0"></td>
+                        <td class="score-display">34</td>
+                        <td><input type="number" class="editable" value="40" data-field="goal" min="1"></td>
+                        <td class="progress-display">25.0%</td>
+                        <td class="conversion-display">20.0%</td>
+                        <td><input type="color" class="color-input" value="#96ceb4" data-field="color"></td>
+                        <td><button class="btn btn-danger btn-sm" onclick="removeTeamMember('sam')">🗑️</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Dashboard Sync & Export Controls -->
+        <div class="section">
+            <h2>🔄 GitHub Dashboard Sync</h2>
+            <div class="instructions">
+                <h3>🚀 Live Dashboard Integration:</h3>
+                <p>Generate code to update your GitHub Pages dashboard or export data in various formats for manual updates.</p>
+            </div>
+            
+            <div class="section-grid">
+                <div class="card">
+                    <h3>⚡ Instant GitHub Sync</h3>
+                    <p>Generate HTML/JavaScript code to update your dashboard:</p>
+                    <button class="btn btn-primary" onclick="generateDashboardCode()">
+                        🔄 Generate Dashboard Update Code
+                    </button>
+                    <button class="btn btn-secondary" onclick="generateJSONData()">
+                        📄 Generate JSON Data
+                    </button>
+                    <button class="btn btn-secondary" onclick="generateCSVData()">
+                        📊 Generate CSV Export
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h3>📋 Dashboard URL Management</h3>
+                    <label>Your Dashboard URL:</label>
+                    <input type="url" class="editable" value="https://terence1975-coder.github.io/Leaderboard/index.html" id="dashboard-url">
+                    <label>Backup Dashboard URL:</label>
+                    <input type="url" class="editable" value="" id="backup-dashboard-url" placeholder="Optional backup URL">
+                    <button class="btn btn-primary" onclick="openDashboard()" style="margin-top: 15px;">
+                        🔗 Open Live Dashboard
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h3>🎨 Custom CSS Styles</h3>
+                    <label>Additional CSS for Dashboard:</label>
+                    <textarea class="editable textarea" id="custom-css" placeholder="Enter custom CSS styles here..."></textarea>
+                    <button class="btn btn-secondary" onclick="generateCSSCode()" style="margin-top: 15px;">
+                        🎨 Generate CSS Update
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generated Code Output Section -->
+        <div class="section">
+            <h2>💻 Generated Dashboard Code</h2>
+            <div class="instructions">
+                <h3>📝 Copy & Paste Updates:</h3>
+                <p>Copy the generated code below and paste it into your GitHub repository to update your dashboard.</p>
+            </div>
+            
+            <div class="output-area" id="generated-code">
+// Click "Generate Dashboard Update Code" to see the code here
+// This will contain HTML, CSS, and JavaScript to update your dashboard
+            </div>
+            
             <div class="export-section">
-                <h3>🔄 Data Management:</h3>
-                <p>Export data, generate reports, and manage dashboard synchronization.</p>
+                <h3>📥 Download Options:</h3>
+                <div class="export-buttons">
+                    <button class="btn btn-primary" onclick="downloadHTML()">
+                        📄 Download HTML File
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadJSON()">
+                        📊 Download JSON Data
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadCSV()">
+                        📈 Download CSV File
+                    </button>
+                    <button class="btn btn-danger" onclick="resetAllData()">
+                        🔄 Reset All Data
+                    </button>
+                </div>
+            </div>
