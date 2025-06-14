@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prospecting Data Management Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sync-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sync-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .update-section {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            padding: 30px;
+            margin: 30px;
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .update-section::before {
+            content: '🚀';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 6rem;
+            opacity: 0.1;
+        }
+
+        .btn-update {
+            background: white;
+            color: #00a085;
+            border: 3px solid white;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-update:hover {
+            background: #00a085;
+            color: white;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+        }
+
+        .section {
+            padding: 40px;
+            border-bottom: 3px solid #f1f2f6;
+            position: relative;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section h2 {
+            color: #1e3c72;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .section h2::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, #74b9ff, transparent);
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: #74b9ff;
+        }
+
+        .card h3 {
+            color: #2d3436;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 5px solid #2196f3;
+        }
+
+        .instructions h3 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+        }
+
+        th {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+        tr:hover td {
+            background-color: #f1f3f4;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #fafbfc;
+        }
+
+        .editable {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 2px solid #ffb74d;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-weight: 500;
+        }
+
+        .editable:focus {
+            outline: none;
+            border-color: #ff9800;
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        .date-input {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border: 2px solid #ba68c8;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            width: 100%;
+            font-weight: 500;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #9c27b0;
+            box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+        }
+
+        .color-input {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border: 2px solid #66bb6a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .export-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 25px;
+        }
+
+        .export-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 184, 148, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(116, 185, 255, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff7675 0%, #e17055 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 118, 117, 0.3);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-active { background: #4caf50; }
+        .status-pending { background: #ff9800; }
+        .status-overdue { background: #f44336; }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .output-area {
+            background: #1a1a1a;
+            color: #00ff41;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 2px solid #333;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 25px 20px;
+            }
+            
+            .section {
+                padding: 25px 20px;
+            }
+            
+            .section-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .export-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="sync-status">
+                <div class="sync-indicator"></div>
+                <span id="sync-status">Synced</span>
+            </div>
+            <h1>🎯 Complete Prospecting Data Hub</h1>
+            <p>Seamless Dashboard Control Center</p>
+        </div>
+
+        <div class="update-section">
+            <h3 style="color: white; margin-bottom: 20px; font-size: 1.4rem;">🚀 Dashboard Sync</h3>
+            <button class="btn-update" onclick="updateAndOpenDashboard()">
+                📊 Update & Open Dashboard
+            </button>
+            <p style="color: white; margin-top: 15px; font-size: 1rem; opacity: 0.9;">
+                Instantly sync all changes to your live dashboard
+            </p>
+        </div>
+
+        <!-- Team Performance Section -->
+        <div class="section">
+            <h2>👥 Team Performance Data</h2>
+            <div class="instructions">
+                <h3>📋 Team Management:</h3>
+                <p>Update individual performance metrics, goals, and tracking data. All changes sync automatically to your dashboard leaderboards and progress charts.</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Team Member</th>
+                        <th>🎣 Interested</th>
+                        <th>🥅 Bums in Seats</th>
+                        <th>📞 Calls Made</th>
+                        <th>📧 Emails Sent</th>
+                        <th>📝 Notes Taken</th>
+                        <th>🎯 Personal Goal</th>
+                        <th>📊 Progress %</th>
+                        <th>🔄 Conversion Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>🎯 Robert</strong></td>
+                        <td><input type="number" class="editable" value="5" id="robert-interested" min="0"></td>
+                        <td><input type="number" class="editable" value="2" id="robert-seats" min="0"></td>
+                        <td><input type="number" class="editable" value="15" id="robert-calls" min="0"></td>
+                        <td><input type="number" class="editable" value="15" id="robert-emails" min="0"></td>
+                        <td><input type="number" class="editable" value="12" id="robert-notes" min="0"></td>
+                        <td><input type="number" class="editable" value="40" id="robert-goal" min="1"></td>
+                        <td id="robert-progress">37.5%</td>
+                        <td id="robert-conversion">13.3%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🌟 Terence</strong></td>
+                        <td><input type="number" class="editable" value="3" id="terence-interested" min="0"></td>
+                        <td><input type="number" class="editable" value="1" id="terence-seats" min="0"></td>
+                        <td><input type="number" class="editable" value="12" id="terence-calls" min="0"></td>
+                        <td><input type="number" class="editable" value="12" id="terence-emails" min="0"></td>
+                        <td><input type="number" class="editable" value="10" id="terence-notes" min="0"></td>
+                        <td><input type="number" class="editable" value="40" id="terence-goal" min="1"></td>
+                        <td id="terence-progress">30.0%</td>
+                        <td id="terence-conversion">8.3%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>💫 Lynette</strong></td>
+                        <td><input type="number" class="editable" value="7" id="lynette-interested" min="0"></td>
+                        <td><input type="number" class="editable" value="3" id="lynette-seats" min="0"></td>
+                        <td><input type="number" class="editable" value="18" id="lynette-calls" min="0"></td>
+                        <td><input type="number" class="editable" value="18" id="lynette-emails" min="0"></td>
+                        <td><input type="number" class="editable" value="15" id="lynette-notes" min="0"></td>
+                        <td><input type="number" class="editable" value="40" id="lynette-goal" min="1"></td>
+                        <td id="lynette-progress">45.0%</td>
+                        <td id="lynette-conversion">16.7%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>⭐ Sam</strong></td>
+                        <td><input type="number" class="editable" value="4" id="sam-interested" min="0"></td>
+                        <td><input type="number" class="editable" value="2" id="sam-seats" min="0"></td>
+                        <td><input type="number" class="editable" value="10" id="sam-calls" min="0"></td>
+                        <td><input type="number" class="editable" value="10" id="sam-emails" min="0"></td>
+                        <td><input type="number" class="editable" value="8" id="sam-notes" min="0"></td>
+                        <td><input type="number" class="editable" value="40" id="sam-goal" min="1"></td>
+                        <td id="sam-progress">25.0%</td>
+                        <td id="sam-conversion">20.0%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Countdown & Deadlines Section -->
+        <div class="section">
+            <h2>⏰ Countdown Timers & Deadlines</h2>
+            <div class="instructions">
+                <h3>📅 Date Management:</h3>
+                <p>Set and update countdown timers for projects, events, and deadlines. Configure custom labels and colors for each countdown.</p>
+            </div>
+            
+            <div class="section-grid">
+                <div class="card">
+                    <h3>⚡ Prince 2 Devon</h3>
+                    <input type="date" class="date-input" value="2025-07-17" id="countdown1-date">
+                    <input type="text" class="editable" value="Prince 2 Devon" id="countdown1-label" placeholder="Custom Label">
+                    <input type="color" class="color-input" value="#ff6b6b" id="countdown1-color">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="countdown1-progress" style="width: 65%"></div>
+                    </div>
+                    <p><strong id="countdown1-days">34 days remaining</strong></p>
+                </div>
+                
+                <div class="card">
+                    <h3>🤖 AI Cornwall</h3>
+                    <input type="date" class="date-input" value="2025-07-23" id="countdown2-date">
+                    <input type="text" class="editable" value="AI Cornwall" id="countdown2-label" placeholder="Custom Label">
+                    <input type="color" class="color-input" value="#4ecdc4" id="countdown2-color">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="countdown2-progress" style="width: 70%"></div>
+                    </div>
+                    <p><strong id="countdown2-days">40 days remaining</strong></p>
+                </div>
+                
+                <div class="card">
+                    <h3>💼 Microsoft Cornwall</h3>
+                    <input type="date" class="date-input" value="2025-07-23" id="countdown3-date">
+                    <input type="text" class="editable" value="Microsoft Cornwall" id="countdown3-label" placeholder="Custom Label">
+                    <input type="color" class="color-input" value="#45b7d1" id="countdown3-color">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="countdown3-progress" style="width: 70%"></div>
+                    </div>
+                    <p><strong id="countdown3-days">40 days remaining</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Customization Section -->
+        <div class="section">
+            <h2>🎨 Dashboard Customization</h2>
+            <div class="instructions">
+                <h3>🖼️ Visual Settings:</h3>
+                <p>Customize colors, themes, and display preferences for your dashboard layout and components.</p>
+            </div>
+            
+            <div class="section-grid">
+                <div class="card">
+                    <h3>🎨 Theme Settings</h3>
+                    <label>Primary Color:</label>
+                    <input type="color" class="color-input" value="#74b9ff" id="theme-primary">
+                    <label>Secondary Color:</label>
+                    <input type="color" class="color-input" value="#00b894" id="theme-secondary">
+                    <label>Background Style:</label>
+                    <select class="editable" id="theme-background">
+                        <option value="gradient">Gradient</option>
+                        <option value="solid">Solid Color</option>
+                        <option value="pattern">Pattern</option>
+                    </select>
+                </div>
+                
+                <div class="card">
+                    <h3>📊 Chart Settings</h3>
+                    <label>Chart Type:</label>
+                    <select class="editable" id="chart-type">
+                        <option value="bar">Bar Chart</option>
+                        <option value="line">Line Chart</option>
+                        <option value="pie">Pie Chart</option>
+                        <option value="doughnut">Doughnut Chart</option>
+                    </select>
+                    <label>Animation Speed:</label>
+                    <input type="range" class="editable" min="500" max="3000" value="1500" id="animation-speed">
+                    <span id="animation-display">1.5s</span>
+                </div>
+                
+                <div class="card">
+                    <h3>📱 Display Options</h3>
+                    <label><input type="checkbox" id="show-animations" checked> Enable Animations</label><br>
+                    <label><input type="checkbox" id="show-particles" checked> Particle Effects</label><br>
+                    <label><input type="checkbox" id="show-sound" checked> Sound Effects</label><br>
+                    <label><input type="checkbox" id="auto-refresh" checked> Auto Refresh (30s)</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goals & Targets Section -->
+        <div class="section">
+            <h2>🎯 Goals & Targets</h2>
+            <div class="instructions">
+                <h3>📈 Target Management:</h3>
+                <p>Set team and individual goals, quotas, and performance targets that will be reflected across all dashboard metrics.</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Goal Category</th>
+                        <th>Current Target</th>
+                        <th>New Target</th>
+                        <th>Period</th>
+                        <th>Team/Individual</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>📞 Daily Calls</strong></td>
+                        <td>40 per person</td>
+                        <td><input type="number" class="editable" value="40" id="goal-daily-calls"></td>
+                        <td>
+                            <select class="editable" id="goal-calls-period">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </td>
+                        <td>Individual</td>
+                        <td><span class="status-indicator status-active"></span>Active</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🎣 Weekly Interested</strong></td>
+                        <td>20 total</td>
+                        <td><input type="number" class="editable" value="20" id="goal-weekly-interested"></td>
+                        <td>
+                            <select class="editable" id="goal-interested-period">
+                                <option value="daily">Daily</option>
+                                <option value="weekly" selected>Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </td>
+                        <td>Team</td>
+                        <td><span class="status-indicator status-active"></span>Active</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🥅 Monthly Conversions</strong></td>
+                        <td>50 total</td>
+                        <td><input type="number" class="editable" value="50" id="goal-monthly-conversions"></td>
+                        <td>
+                            <select class="editable" id="goal-conversions-period">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly" selected>Monthly</option>
+                            </select>
+                        </td>
+                        <td>Team</td>
+                        <td><span class="status-indicator status-pending"></span>Pending</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Real-time Metrics Section -->
+        <div class="section">
+            <h2>📊 Live Dashboard Metrics</h2>
+            <div class="section-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="total-calls-metric">55</div>
+                    <div class="metric-label">Total Calls Made</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="total-interested-metric">19</div>
+                    <div class="metric-label">Total Interested</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="total-conversions-metric">8</div>
+                    <div class="metric-label">Total Conversions</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="team-progress-metric">34.4%</div>
+                    <div class="metric-label">Team Progress</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export & Sync Section -->
+        <div class="section">
+            <h2>💾 Export & Sync Operations</h2>
+            <div class="export-section">
+                <h3>🔄 Data Management:</h3>
+                <p>Export data, generate reports, and manage dashboard synchronization.</p>
