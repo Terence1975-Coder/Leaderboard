@@ -1,0 +1,1 @@
+Can you update the script with the following details Firebase Configuration const firebaseConfig = { apiKey: "AIzaSyChiAlrD-JLtBSDN3sOyxYiLGig-6Cy3GM", authDomain: "prospecting-f2f42.firebaseapp.com", databaseURL: "https://prospecting-f2f42-default-rtdb.europe-west1.firebasedatabase.app/", projectId: "prospecting-f2f42", storageBucket: "prospecting-f2f42.firebasestorage.app
