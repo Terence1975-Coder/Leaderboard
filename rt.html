@@ -701,16 +701,53 @@
             });
 
             if (hasData) {
+                updateFirebaseStatus('saving');
                 const timestamp = new Date().toISOString();
                 database.ref('cornwallBusinessTracker').update({
                     data: allData,
                     lastUpdated: timestamp
                 }).then(() => {
+                    updateFirebaseStatus('connected');
                     console.log('Auto-saved to Firebase at:', timestamp);
+                    
+                    // Show brief save confirmation
+                    showSaveConfirmation();
                 }).catch((error) => {
+                    updateFirebaseStatus('disconnected');
                     console.error('Auto-save failed:', error);
                 });
             }
+        }
+
+        function showSaveConfirmation() {
+            // Create temporary save confirmation message
+            const confirmation = document.createElement('div');
+            confirmation.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: #27ae60;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 20px;
+                font-weight: 600;
+                z-index: 1001;
+                box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+                transition: all 0.3s ease;
+            `;
+            confirmation.textContent = '✓ Data Saved';
+            document.body.appendChild(confirmation);
+            
+            // Remove after 2 seconds
+            setTimeout(() => {
+                confirmation.style.opacity = '0';
+                confirmation.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    if (confirmation.parentNode) {
+                        confirmation.parentNode.removeChild(confirmation);
+                    }
+                }, 300);
+            }, 2000);
         }
 
         function loadFromFirebase() {
@@ -819,6 +856,36 @@
             // Update dashboard every 2 seconds
             setInterval(updateDashboard, 2000);
             updateDashboard(); // Initial update
+            
+            // Auto-save trigger on data changes
+            setupAutoSaveTriggers();
+        }
+
+        function setupAutoSaveTriggers() {
+            // Add event listeners to all inputs to trigger auto-save
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('input, select')) {
+                    // Debounce the save operation
+                    clearTimeout(window.autoSaveTimeout);
+                    window.autoSaveTimeout = setTimeout(() => {
+                        if (database) {
+                            autoSaveToFirebase();
+                        }
+                    }, 3000); // Save 3 seconds after user stops typing
+                }
+            });
+
+            // Also trigger on button clicks
+            document.addEventListener('click', function(e) {
+                if (e.target.matches('.btn-small, .outcome-select')) {
+                    clearTimeout(window.autoSaveTimeout);
+                    window.autoSaveTimeout = setTimeout(() => {
+                        if (database) {
+                            autoSaveToFirebase();
+                        }
+                    }, 1000); // Save 1 second after button click
+                }
+            });
         }
 
         function updateDashboard() {
