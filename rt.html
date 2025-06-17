@@ -634,12 +634,12 @@
                     const phone = document.getElementById(`${sector}-phone-${i}`)?.value || '';
                     const notes = document.getElementById(`${sector}-notes-${i}`)?.value || '';
 
-                    // Get button states
-                    const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-bootcamp`);
-                    const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-email`);
-                    const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-call`);
-                    const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-visit`);
-                    const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .outcome-select`);
+                    // Get button states - each entry has 2 elements (row + notes), so multiply by 2
+                    const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-bootcamp`);
+                    const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-email`);
+                    const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-call`);
+                    const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-visit`);
+                    const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .outcome-select`);
 
                     allData[sector][i] = {
                         company,
@@ -788,12 +788,12 @@
                         if (phoneInput) phoneInput.value = rowData.phone || '';
                         if (notesInput) notesInput.value = rowData.notes || '';
 
-                        // Set button states
-                        const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-bootcamp`);
-                        const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-email`);
-                        const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-call`);
-                        const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-visit`);
-                        const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .outcome-select`);
+                        // Set button states - fix selector for proper row targeting
+                        const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-bootcamp`);
+                        const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-email`);
+                        const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-call`);
+                        const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-visit`);
+                        const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .outcome-select`);
 
                         if (bootcampBtn && rowData.bootcamp) {
                             bootcampBtn.textContent = rowData.bootcamp;
@@ -913,8 +913,8 @@
                         totalActive++;
                         sectorActive[sector]++;
 
-                        // Count bootcamp types
-                        const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-bootcamp`);
+                        // Count bootcamp types - fix selector
+                        const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-bootcamp`);
                         if (bootcampBtn) {
                             const bootcampType = bootcampBtn.textContent;
                             if (bootcampCounts.hasOwnProperty(bootcampType)) {
@@ -922,10 +922,10 @@
                             }
                         }
 
-                        // Count communications
-                        const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-email`);
-                        const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-call`);
-                        const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-visit`);
+                        // Count communications - fix selectors
+                        const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-email`);
+                        const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-call`);
+                        const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-visit`);
 
                         if (emailBtn && emailBtn.textContent === 'Sent') {
                             communicationCounts.emails++;
@@ -937,8 +937,8 @@
                             communicationCounts.visits++;
                         }
 
-                        // Count outcomes
-                        const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .outcome-select`);
+                        // Count outcomes - fix selector
+                        const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .outcome-select`);
                         if (outcomeSelect && outcomeSelect.value) {
                             outcomeCounts[outcomeSelect.value]++;
                         }
@@ -1015,19 +1015,19 @@
                     <input type="tel" placeholder="Phone Number" id="${sectorName}-phone-${index}">
                 </div>
                 <div class="grid-cell">
-                    <button class="btn-small btn-bootcamp" onclick="toggleBootcamp(this)">Bootcamp</button>
+                    <button class="btn-small btn-bootcamp" onclick="toggleBootcamp(this)" id="${sectorName}-bootcamp-${index}">Bootcamp</button>
                 </div>
                 <div class="grid-cell">
                     <div class="email-buttons">
-                        <button class="btn-small btn-email" onclick="toggleEmail(this)">Send</button>
-                        <button class="btn-small btn-call" onclick="toggleCall(this)">Call</button>
+                        <button class="btn-small btn-email" onclick="toggleEmail(this)" id="${sectorName}-email-btn-${index}">Send</button>
+                        <button class="btn-small btn-call" onclick="toggleCall(this)" id="${sectorName}-call-btn-${index}">Call</button>
                     </div>
                 </div>
                 <div class="grid-cell">
                     
                 </div>
                 <div class="grid-cell">
-                    <select class="outcome-select" onchange="updateOutcomeColor(this)">
+                    <select class="outcome-select" onchange="updateOutcomeColor(this)" id="${sectorName}-outcome-${index}">
                         <option value="">Select Outcome</option>
                         <option value="Confirmed">Confirmed</option>
                         <option value="Rejected">Rejected</option>
