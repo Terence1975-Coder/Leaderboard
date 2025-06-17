@@ -70,6 +70,9 @@
         .export-btn { background: #27ae60; color: white; }
         .export-btn:hover { background: #219a52; transform: translateY(-2px); }
 
+        .upload-btn { background: #9b59b6; color: white; }
+        .upload-btn:hover { background: #8e44ad; transform: translateY(-2px); }
+
         .print-btn { background: #3498db; color: white; }
         .print-btn:hover { background: #2980b9; transform: translateY(-2px); }
 
@@ -451,6 +454,8 @@
         </div>
 
         <div class="controls">
+            <input type="file" id="csvUpload" accept=".csv" style="display: none;" onchange="uploadCSV(event)">
+            <button onclick="document.getElementById('csvUpload').click()" class="btn upload-btn">Upload CSV</button>
             <button onclick="exportAllToCSV()" class="btn export-btn">Export All to CSV</button>
             <button onclick="window.print()" class="btn print-btn">Print All</button>
             <button onclick="clearAllData()" class="btn clear-btn">Clear All Data</button>
@@ -856,6 +861,77 @@
                 // Update dashboard after clearing
                 updateDashboard();
             }
+        }
+
+        function uploadCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csv = e.target.result;
+                const lines = csv.split('\n');
+                const headers = lines[0].split(',');
+                
+                // Clear existing data first
+                clearAllData();
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const values = line.split(',').map(val => val.replace(/"/g, '').trim());
+                    
+                    if (values.length >= 6) {
+                        const sector = values[0].toLowerCase();
+                        const rowNumber = parseInt(values[1]);
+                        const company = values[2];
+                        const contact = values[3];
+                        const title = values[4];
+                        const email = values[5];
+                        const phone = values[6];
+                        const outcome = values[10] || '';
+                        const notes = values[11] || '';
+                        
+                        let sectorName = '';
+                        if (sector.includes('tourism')) sectorName = 'tourism';
+                        else if (sector.includes('agriculture')) sectorName = 'agriculture';
+                        else if (sector.includes('energy')) sectorName = 'energy';
+                        
+                        if (sectorName && rowNumber >= 1 && rowNumber <= 40) {
+                            // Fill in the data
+                            const companyInput = document.getElementById(`${sectorName}-company-${rowNumber}`);
+                            const contactInput = document.getElementById(`${sectorName}-contact-${rowNumber}`);
+                            const titleInput = document.getElementById(`${sectorName}-title-${rowNumber}`);
+                            const emailInput = document.getElementById(`${sectorName}-email-${rowNumber}`);
+                            const phoneInput = document.getElementById(`${sectorName}-phone-${rowNumber}`);
+                            const notesInput = document.getElementById(`${sectorName}-notes-${rowNumber}`);
+                            
+                            if (companyInput) companyInput.value = company;
+                            if (contactInput) contactInput.value = contact;
+                            if (titleInput) titleInput.value = title;
+                            if (emailInput) emailInput.value = email;
+                            if (phoneInput) phoneInput.value = phone;
+                            if (notesInput) notesInput.value = notes;
+                            
+                            // Set outcome if provided
+                            if (outcome) {
+                                const outcomeSelect = document.querySelector(`#${sectorName}-grid .grid-row:nth-child(${(rowNumber * 2) - 1}) .outcome-select`);
+                                if (outcomeSelect) {
+                                    outcomeSelect.value = outcome;
+                                    updateOutcomeColor(outcomeSelect);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Update dashboard after upload
+                updateDashboard();
+                alert('CSV uploaded successfully!');
+            };
+            
+            reader.readAsText(file);
         }
 
         // Initialize the page when it loads
