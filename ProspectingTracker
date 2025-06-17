@@ -1,1 +1,1283 @@
-Can you update the script with the following details Firebase Configuration const firebaseConfig = { apiKey: "AIzaSyChiAlrD-JLtBSDN3sOyxYiLGig-6Cy3GM", authDomain: "prospecting-f2f42.firebaseapp.com", databaseURL: "https://prospecting-f2f42-default-rtdb.europe-west1.firebasedatabase.app/", projectId: "prospecting-f2f42", storageBucket: "prospecting-f2f42.firebasestorage.app
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rob's Cornwall Business Contact Tracker v3</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .export-btn { background: #27ae60; color: white; }
+        .export-btn:hover { background: #219a52; transform: translateY(-2px); }
+
+        .upload-btn { background: #9b59b6; color: white; }
+        .upload-btn:hover { background: #8e44ad; transform: translateY(-2px); }
+
+        .save-btn { background: #2ecc71; color: white; }
+        .save-btn:hover { background: #27ae60; transform: translateY(-2px); }
+
+        .load-btn { background: #3498db; color: white; }
+        .load-btn:hover { background: #2980b9; transform: translateY(-2px); }
+
+        .print-btn { background: #34495e; color: white; }
+        .print-btn:hover { background: #2c3e50; transform: translateY(-2px); }
+
+        .clear-btn { background: #e74c3c; color: white; }
+        .clear-btn:hover { background: #c0392b; transform: translateY(-2px); }
+
+        .sector {
+            margin: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .sector-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 20px;
+            font-size: 1.8em;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .grid-container {
+            padding: 20px;
+        }
+
+        .grid-header {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 80px 60px 60px 120px;
+            gap: 10px;
+            padding: 15px 10px;
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .grid-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 80px 60px 60px 120px;
+            gap: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .notes-row {
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            gap: 10px;
+            padding: 5px 10px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .email-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .grid-row:nth-child(even) { background-color: #f8f9fa; }
+        .grid-row:nth-child(odd) { background-color: #ffffff; }
+
+        /* Outcome color coding */
+        .outcome-confirmed { 
+            border: 3px solid #27ae60 !important; 
+            background-color: rgba(39, 174, 96, 0.1) !important; 
+        }
+        .outcome-rejected { 
+            border: 3px solid #e74c3c !important; 
+            background-color: rgba(231, 76, 60, 0.1) !important; 
+        }
+        .outcome-interview { 
+            border: 3px solid #3498db !important; 
+            background-color: rgba(52, 152, 219, 0.1) !important; 
+        }
+        .outcome-waitlist { 
+            border: 3px solid #f39c12 !important; 
+            background-color: rgba(243, 156, 18, 0.1) !important; 
+        }
+        .outcome-pending { 
+            border: 3px solid #9b59b6 !important; 
+            background-color: rgba(155, 89, 182, 0.1) !important; 
+        }
+        .outcome-no-response { 
+            border: 3px solid #7f8c8d !important; 
+            background-color: rgba(127, 140, 141, 0.1) !important; 
+        }
+
+        .grid-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+        }
+
+        .grid-cell input, .grid-cell select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .grid-cell input:focus, .grid-cell select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-bootcamp { background: #8e44ad; color: white; }
+        .btn-bootcamp:hover { background: #7d3c98; }
+
+        .btn-email { background: #2ecc71; color: white; }
+        .btn-email:hover { background: #27ae60; }
+
+        .btn-call { background: #f39c12; color: white; }
+        .btn-call:hover { background: #e67e22; }
+
+        .btn-visit { background: #e74c3c; color: white; }
+        .btn-visit:hover { background: #c0392b; }
+
+        .outcome-select {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .outcome-select option[value="Confirmed"] { color: #27ae60; }
+        .outcome-select option[value="Rejected"] { color: #e74c3c; }
+        .outcome-select option[value="Interview"] { color: #3498db; }
+        .outcome-select option[value="Waitlist"] { color: #f39c12; }
+        .outcome-select option[value="Pending"] { color: #9b59b6; }
+        .outcome-select option[value="No Response"] { color: #7f8c8d; }
+
+        /* Dashboard Styles */
+        .dashboard {
+            margin: 0;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h2 {
+            font-size: 2em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .stat-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ecf0f1;
+            text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: 700;
+            text-align: center;
+            color: #3498db;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stat-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-breakdown > div {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-breakdown > div:last-child {
+            border-bottom: none;
+        }
+
+        .stat-breakdown span {
+            font-weight: 600;
+            color: #3498db;
+        }
+
+        .outcome-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-weight: 500;
+        }
+
+        .outcome-stat:last-child {
+            border-bottom: none;
+        }
+
+        .outcome-stat.confirmed { color: #2ecc71; }
+        .outcome-stat.rejected { color: #e74c3c; }
+        .outcome-stat.interview { color: #3498db; }
+        .outcome-stat.waitlist { color: #f39c12; }
+        .outcome-stat.pending { color: #9b59b6; }
+        .outcome-stat.no-response { color: #95a5a6; }
+
+        .outcome-stat span {
+            color: inherit !important;
+            font-weight: 700;
+        }
+
+        .success-rate {
+            text-align: center;
+        }
+
+        .rate-label {
+            font-size: 1em;
+            margin-bottom: 10px;
+            color: #ecf0f1;
+        }
+
+        .rate-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #2ecc71;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .rate-details {
+            color: #bdc3c7;
+            font-size: 0.8em;
+        }
+
+        /* Firebase Status Indicator */
+        .firebase-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.9em;
+            font-weight: 600;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .firebase-connected {
+            background: #27ae60;
+            box-shadow: 0 2px 10px rgba(39, 174, 96, 0.3);
+        }
+
+        .firebase-disconnected {
+            background: #e74c3c;
+            box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
+        }
+
+        .firebase-saving {
+            background: #f39c12;
+            box-shadow: 0 2px 10px rgba(243, 156, 18, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .grid-header, .grid-row {
+                grid-template-columns: 1fr;
+                text-align: left;
+            }
+            
+            .grid-cell {
+                justify-content: flex-start;
+                margin-bottom: 10px;
+            }
+        }
+
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; }
+            .controls { display: none; }
+            .btn-small { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Rob's Cornwall Business Contact Tracker v3</h1>
+            <p>Tourism & Hospitality • Agriculture & Food Production • Renewable Energy</p>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <div class="dashboard-header">
+                <h2>Contact Activity Dashboard</h2>
+            </div>
+            <div class="dashboard-content">
+                <div class="stats-grid">
+                    <!-- Active Contacts -->
+                    <div class="stat-card">
+                        <div class="stat-title">Active Contacts</div>
+                        <div class="stat-number" id="active-contacts">0</div>
+                        <div class="stat-breakdown">
+                            <div>Tourism: <span id="tourism-active">0</span></div>
+                            <div>Agriculture: <span id="agriculture-active">0</span></div>
+                            <div>Energy: <span id="energy-active">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Bootcamp Stats -->
+                    <div class="stat-card">
+                        <div class="stat-title">Bootcamp Types</div>
+                        <div class="stat-breakdown">
+                            <div>Bootcamp: <span id="bootcamp-count">0</span></div>
+                            <div>Prince 2: <span id="prince2-count">0</span></div>
+                            <div>AI: <span id="ai-count">0</span></div>
+                            <div>Microsoft: <span id="microsoft-count">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Communication Stats -->
+                    <div class="stat-card">
+                        <div class="stat-title">Communications</div>
+                        <div class="stat-breakdown">
+                            <div>Emails Sent: <span id="emails-sent">0</span></div>
+                            <div>Calls Made: <span id="calls-made">0</span></div>
+                            <div>Visits Made: <span id="visits-made">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Outcomes Stats -->
+                    <div class="stat-card">
+                        <div class="stat-title">Outcomes</div>
+                        <div class="stat-breakdown">
+                            <div class="outcome-stat confirmed">Confirmed: <span id="confirmed-count">0</span></div>
+                            <div class="outcome-stat rejected">Rejected: <span id="rejected-count">0</span></div>
+                            <div class="outcome-stat interview">Interview: <span id="interview-count">0</span></div>
+                            <div class="outcome-stat waitlist">Waitlist: <span id="waitlist-count">0</span></div>
+                            <div class="outcome-stat pending">Pending: <span id="pending-count">0</span></div>
+                            <div class="outcome-stat no-response">No Response: <span id="no-response-count">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Completion Stats -->
+                    <div class="stat-card">
+                        <div class="stat-title">Data Completion</div>
+                        <div class="stat-breakdown">
+                            <div>With Email: <span id="with-email">0</span></div>
+                            <div>With Phone: <span id="with-phone">0</span></div>
+                            <div>With Notes: <span id="with-notes">0</span></div>
+                            <div>Complete Profiles: <span id="complete-profiles">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Success Rate -->
+                    <div class="stat-card">
+                        <div class="stat-title">Success Metrics</div>
+                        <div class="success-rate">
+                            <div class="rate-label">Success Rate</div>
+                            <div class="rate-number" id="success-rate">0%</div>
+                            <div class="rate-details">
+                                <small>Confirmed + Interview / Total Outcomes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="file" id="csvUpload" accept=".csv" style="display: none;" onchange="uploadCSV(event)">
+            <button onclick="document.getElementById('csvUpload').click()" class="btn upload-btn">Upload CSV</button>
+            <button onclick="exportAllToCSV()" class="btn export-btn">Export All to CSV</button>
+            <button onclick="saveToFirebase()" class="btn save-btn">Save to Cloud</button>
+            <button onclick="loadFromFirebase()" class="btn load-btn">Load from Cloud</button>
+            <button onclick="window.print()" class="btn print-btn">Print All</button>
+            <button onclick="clearAllData()" class="btn clear-btn">Clear All Data</button>
+        </div>
+
+        <!-- Firebase Status Indicator -->
+        <div id="firebase-status" class="firebase-status firebase-disconnected">
+            🔴 Firebase Disconnected
+        </div>
+
+        <!-- Tourism & Hospitality Sector -->
+        <div class="sector">
+            <div class="sector-header">Tourism & Hospitality</div>
+            <div class="grid-container">
+                <div class="grid-header">
+                    <div>#</div>
+                    <div>Company Name</div>
+                    <div>Contact Person</div>
+                    <div>Title</div>
+                    <div>Email</div>
+                    <div>Phone</div>
+                    <div>Bootcamp</div>
+                    <div>Email</div>
+                    <div>Call</div>
+                    <div>Outcome</div>
+                </div>
+                <div id="tourism-grid"></div>
+            </div>
+        </div>
+
+        <!-- Agriculture & Food Production Sector -->
+        <div class="sector">
+            <div class="sector-header">Agriculture & Food Production</div>
+            <div class="grid-container">
+                <div class="grid-header">
+                    <div>#</div>
+                    <div>Company Name</div>
+                    <div>Contact Person</div>
+                    <div>Email</div>
+                    <div>Phone</div>
+                    <div>Bootcamp</div>
+                    <div>Email</div>
+                    <div>Call</div>
+                    <div>Visit</div>
+                    <div>Outcome</div>
+                </div>
+                <div id="agriculture-grid"></div>
+            </div>
+        </div>
+
+        <!-- Renewable Energy Sector -->
+        <div class="sector">
+            <div class="sector-header">Renewable Energy</div>
+            <div class="grid-container">
+                <div class="grid-header">
+                    <div>#</div>
+                    <div>Company Name</div>
+                    <div>Contact Person</div>
+                    <div>Email</div>
+                    <div>Phone</div>
+                    <div>Bootcamp</div>
+                    <div>Email</div>
+                    <div>Call</div>
+                    <div>Visit</div>
+                    <div>Outcome</div>
+                </div>
+                <div id="energy-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyChiAlrD-JLtBSDN3sOyxYiLGig-6Cy3GM",
+            authDomain: "prospecting-f2f42.firebaseapp.com",
+            databaseURL: "https://prospecting-f2f42-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "prospecting-f2f42",
+            storageBucket: "prospecting-f2f42.firebasestorage.app",
+            messagingSenderId: "292034226428",
+            appId: "1:292034226428:web:878b867e3eb4d3e0098f79",
+            measurementId: "G-WWB0JTX2L2"
+        };
+
+        // Initialize Firebase
+        let database = null;
+        let firebaseApp = null;
+
+        function initializeFirebase() {
+            try {
+                firebaseApp = firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                updateFirebaseStatus('connected');
+                console.log('Firebase initialized successfully');
+                
+                // Auto-load data on startup
+                loadFromFirebase();
+                
+                // Set up auto-save every 30 seconds
+                setInterval(autoSaveToFirebase, 30000);
+                
+            } catch (error) {
+                console.error('Firebase initialization failed:', error);
+                updateFirebaseStatus('disconnected');
+                alert('Firebase connection failed. Please check your configuration.');
+            }
+        }
+
+        function updateFirebaseStatus(status) {
+            const statusElement = document.getElementById('firebase-status');
+            if (status === 'connected') {
+                statusElement.className = 'firebase-status firebase-connected';
+                statusElement.innerHTML = '🟢 Firebase Connected';
+            } else if (status === 'saving') {
+                statusElement.className = 'firebase-status firebase-saving';
+                statusElement.innerHTML = '🟡 Saving to Cloud...';
+            } else {
+                statusElement.className = 'firebase-status firebase-disconnected';
+                statusElement.innerHTML = '🔴 Firebase Disconnected';
+            }
+        }
+
+        function getAllData() {
+            const sectors = ['tourism', 'agriculture', 'energy'];
+            const allData = {};
+
+            sectors.forEach(sector => {
+                allData[sector] = {};
+                for (let i = 1; i <= 40; i++) {
+                    const company = document.getElementById(`${sector}-company-${i}`)?.value || '';
+                    const contact = document.getElementById(`${sector}-contact-${i}`)?.value || '';
+                    const title = document.getElementById(`${sector}-title-${i}`)?.value || '';
+                    const email = document.getElementById(`${sector}-email-${i}`)?.value || '';
+                    const phone = document.getElementById(`${sector}-phone-${i}`)?.value || '';
+                    const notes = document.getElementById(`${sector}-notes-${i}`)?.value || '';
+
+                    // Get button states
+                    const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-bootcamp`);
+                    const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-email`);
+                    const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-call`);
+                    const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-visit`);
+                    const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .outcome-select`);
+
+                    allData[sector][i] = {
+                        company,
+                        contact,
+                        title,
+                        email,
+                        phone,
+                        notes,
+                        bootcamp: bootcampBtn?.textContent || 'Bootcamp',
+                        emailStatus: emailBtn?.textContent || 'Send',
+                        callStatus: callBtn?.textContent || 'Call',
+                        visitStatus: visitBtn?.textContent || 'Visit',
+                        outcome: outcomeSelect?.value || ''
+                    };
+                }
+            });
+
+            return allData;
+        }
+
+        function saveToFirebase() {
+            if (!database) {
+                alert('Firebase not connected. Please check your configuration.');
+                return;
+            }
+
+            updateFirebaseStatus('saving');
+            const allData = getAllData();
+            const timestamp = new Date().toISOString();
+
+            database.ref('cornwallBusinessTracker').set({
+                data: allData,
+                lastUpdated: timestamp,
+                version: '3.0'
+            }).then(() => {
+                updateFirebaseStatus('connected');
+                alert('Data saved to Firebase successfully!');
+                console.log('Data saved to Firebase at:', timestamp);
+            }).catch((error) => {
+                updateFirebaseStatus('disconnected');
+                alert('Failed to save to Firebase: ' + error.message);
+                console.error('Firebase save error:', error);
+            });
+        }
+
+        function autoSaveToFirebase() {
+            if (!database) return;
+
+            // Only auto-save if there's actual data
+            const allData = getAllData();
+            let hasData = false;
+            
+            Object.values(allData).forEach(sector => {
+                Object.values(sector).forEach(row => {
+                    if (row.company || row.contact) {
+                        hasData = true;
+                    }
+                });
+            });
+
+            if (hasData) {
+                updateFirebaseStatus('saving');
+                const timestamp = new Date().toISOString();
+                database.ref('cornwallBusinessTracker').update({
+                    data: allData,
+                    lastUpdated: timestamp
+                }).then(() => {
+                    updateFirebaseStatus('connected');
+                    console.log('Auto-saved to Firebase at:', timestamp);
+                    
+                    // Show brief save confirmation
+                    showSaveConfirmation();
+                }).catch((error) => {
+                    updateFirebaseStatus('disconnected');
+                    console.error('Auto-save failed:', error);
+                });
+            }
+        }
+
+        function showSaveConfirmation() {
+            // Create temporary save confirmation message
+            const confirmation = document.createElement('div');
+            confirmation.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: #27ae60;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 20px;
+                font-weight: 600;
+                z-index: 1001;
+                box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+                transition: all 0.3s ease;
+            `;
+            confirmation.textContent = '✓ Data Saved';
+            document.body.appendChild(confirmation);
+            
+            // Remove after 2 seconds
+            setTimeout(() => {
+                confirmation.style.opacity = '0';
+                confirmation.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    if (confirmation.parentNode) {
+                        confirmation.parentNode.removeChild(confirmation);
+                    }
+                }, 300);
+            }, 2000);
+        }
+
+        function loadFromFirebase() {
+            if (!database) {
+                alert('Firebase not connected. Please check your configuration.');
+                return;
+            }
+
+            database.ref('cornwallBusinessTracker').once('value').then((snapshot) => {
+                const firebaseData = snapshot.val();
+                if (!firebaseData || !firebaseData.data) {
+                    console.log('No data found in Firebase');
+                    return;
+                }
+
+                const data = firebaseData.data;
+                const sectors = ['tourism', 'agriculture', 'energy'];
+
+                sectors.forEach(sector => {
+                    if (!data[sector]) return;
+
+                    for (let i = 1; i <= 40; i++) {
+                        const rowData = data[sector][i];
+                        if (!rowData) continue;
+
+                        // Fill form fields
+                        const companyInput = document.getElementById(`${sector}-company-${i}`);
+                        const contactInput = document.getElementById(`${sector}-contact-${i}`);
+                        const titleInput = document.getElementById(`${sector}-title-${i}`);
+                        const emailInput = document.getElementById(`${sector}-email-${i}`);
+                        const phoneInput = document.getElementById(`${sector}-phone-${i}`);
+                        const notesInput = document.getElementById(`${sector}-notes-${i}`);
+
+                        if (companyInput) companyInput.value = rowData.company || '';
+                        if (contactInput) contactInput.value = rowData.contact || '';
+                        if (titleInput) titleInput.value = rowData.title || '';
+                        if (emailInput) emailInput.value = rowData.email || '';
+                        if (phoneInput) phoneInput.value = rowData.phone || '';
+                        if (notesInput) notesInput.value = rowData.notes || '';
+
+                        // Set button states
+                        const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-bootcamp`);
+                        const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-email`);
+                        const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-call`);
+                        const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-visit`);
+                        const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .outcome-select`);
+
+                        if (bootcampBtn && rowData.bootcamp) {
+                            bootcampBtn.textContent = rowData.bootcamp;
+                            const bootcampColors = { 'Bootcamp': '#8e44ad', 'Prince 2': '#e74c3c', 'AI': '#3498db', 'Microsoft': '#27ae60' };
+                            bootcampBtn.style.background = bootcampColors[rowData.bootcamp] || '#8e44ad';
+                        }
+
+                        if (emailBtn && rowData.emailStatus) {
+                            emailBtn.textContent = rowData.emailStatus;
+                            emailBtn.style.background = rowData.emailStatus === 'Sent' ? '#f39c12' : '#2ecc71';
+                        }
+
+                        if (callBtn && rowData.callStatus) {
+                            callBtn.textContent = rowData.callStatus;
+                            callBtn.style.background = rowData.callStatus === 'Called' ? '#27ae60' : '#f39c12';
+                        }
+
+                        if (visitBtn && rowData.visitStatus) {
+                            visitBtn.textContent = rowData.visitStatus;
+                            visitBtn.style.background = rowData.visitStatus === 'Visited' ? '#27ae60' : '#e74c3c';
+                        }
+
+                        if (outcomeSelect && rowData.outcome) {
+                            outcomeSelect.value = rowData.outcome;
+                            updateOutcomeColor(outcomeSelect);
+                        }
+                    }
+                });
+
+                updateDashboard();
+                alert(`Data loaded from Firebase successfully!\nLast updated: ${new Date(firebaseData.lastUpdated).toLocaleString()}`);
+                console.log('Data loaded from Firebase:', firebaseData.lastUpdated);
+
+            }).catch((error) => {
+                alert('Failed to load from Firebase: ' + error.message);
+                console.error('Firebase load error:', error);
+            });
+        }
+        // Initialize the grids with empty rows for data entry
+        function initializeGrids() {
+            const sectors = [
+                { id: 'tourism-grid', name: 'tourism' },
+                { id: 'agriculture-grid', name: 'agriculture' },
+                { id: 'energy-grid', name: 'energy' }
+            ];
+
+            sectors.forEach(sector => {
+                const grid = document.getElementById(sector.id);
+                for (let i = 1; i <= 40; i++) {
+                    grid.appendChild(createGridRow(i, sector.name));
+                }
+            });
+            
+            // Set up real-time dashboard updates
+            setupDashboardUpdates();
+        }
+
+        // Dashboard update functions
+        function setupDashboardUpdates() {
+            // Update dashboard every 2 seconds
+            setInterval(updateDashboard, 2000);
+            updateDashboard(); // Initial update
+            
+            // Auto-save trigger on data changes
+            setupAutoSaveTriggers();
+        }
+
+        function setupAutoSaveTriggers() {
+            // Add event listeners to all inputs to trigger auto-save
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('input, select')) {
+                    // Debounce the save operation
+                    clearTimeout(window.autoSaveTimeout);
+                    window.autoSaveTimeout = setTimeout(() => {
+                        if (database) {
+                            autoSaveToFirebase();
+                        }
+                    }, 3000); // Save 3 seconds after user stops typing
+                }
+            });
+
+            // Also trigger on button clicks
+            document.addEventListener('click', function(e) {
+                if (e.target.matches('.btn-small, .outcome-select')) {
+                    clearTimeout(window.autoSaveTimeout);
+                    window.autoSaveTimeout = setTimeout(() => {
+                        if (database) {
+                            autoSaveToFirebase();
+                        }
+                    }, 1000); // Save 1 second after button click
+                }
+            });
+        }
+
+        function updateDashboard() {
+            const sectors = ['tourism', 'agriculture', 'energy'];
+            let totalActive = 0;
+            let sectorActive = { tourism: 0, agriculture: 0, energy: 0 };
+            let bootcampCounts = { 'Bootcamp': 0, 'Prince 2': 0, 'AI': 0, 'Microsoft': 0 };
+            let communicationCounts = { emails: 0, calls: 0, visits: 0 };
+            let outcomeCounts = { 
+                'Confirmed': 0, 'Rejected': 0, 'Interview': 0, 
+                'Waitlist': 0, 'Pending': 0, 'No Response': 0 
+            };
+            let completionCounts = { email: 0, phone: 0, notes: 0, complete: 0 };
+
+            sectors.forEach(sector => {
+                for (let i = 1; i <= 40; i++) {
+                    const company = document.getElementById(`${sector}-company-${i}`);
+                    const contact = document.getElementById(`${sector}-contact-${i}`);
+                    const email = document.getElementById(`${sector}-email-${i}`);
+                    const phone = document.getElementById(`${sector}-phone-${i}`);
+                    const notes = document.getElementById(`${sector}-notes-${i}`);
+
+                    // Check if this is an active contact (has company or contact name)
+                    if (company && contact && (company.value.trim() || contact.value.trim())) {
+                        totalActive++;
+                        sectorActive[sector]++;
+
+                        // Count bootcamp types
+                        const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-bootcamp`);
+                        if (bootcampBtn) {
+                            const bootcampType = bootcampBtn.textContent;
+                            if (bootcampCounts.hasOwnProperty(bootcampType)) {
+                                bootcampCounts[bootcampType]++;
+                            }
+                        }
+
+                        // Count communications
+                        const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-email`);
+                        const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-call`);
+                        const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-visit`);
+
+                        if (emailBtn && emailBtn.textContent === 'Sent') {
+                            communicationCounts.emails++;
+                        }
+                        if (callBtn && callBtn.textContent === 'Called') {
+                            communicationCounts.calls++;
+                        }
+                        if (visitBtn && visitBtn.textContent === 'Visited') {
+                            communicationCounts.visits++;
+                        }
+
+                        // Count outcomes
+                        const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${(i * 2) - 1}) .outcome-select`);
+                        if (outcomeSelect && outcomeSelect.value) {
+                            outcomeCounts[outcomeSelect.value]++;
+                        }
+
+                        // Count completion stats
+                        if (email && email.value.trim()) completionCounts.email++;
+                        if (phone && phone.value.trim()) completionCounts.phone++;
+                        if (notes && notes.value.trim()) completionCounts.notes++;
+                        
+                        // Complete profile: has company/contact, email, and phone
+                        if ((company.value.trim() || contact.value.trim()) && 
+                            email && email.value.trim() && 
+                            phone && phone.value.trim()) {
+                            completionCounts.complete++;
+                        }
+                    }
+                }
+            });
+
+            // Update dashboard displays
+            document.getElementById('active-contacts').textContent = totalActive;
+            document.getElementById('tourism-active').textContent = sectorActive.tourism;
+            document.getElementById('agriculture-active').textContent = sectorActive.agriculture;
+            document.getElementById('energy-active').textContent = sectorActive.energy;
+
+            document.getElementById('bootcamp-count').textContent = bootcampCounts['Bootcamp'];
+            document.getElementById('prince2-count').textContent = bootcampCounts['Prince 2'];
+            document.getElementById('ai-count').textContent = bootcampCounts['AI'];
+            document.getElementById('microsoft-count').textContent = bootcampCounts['Microsoft'];
+
+            document.getElementById('emails-sent').textContent = communicationCounts.emails;
+            document.getElementById('calls-made').textContent = communicationCounts.calls;
+            document.getElementById('visits-made').textContent = communicationCounts.visits;
+
+            document.getElementById('confirmed-count').textContent = outcomeCounts['Confirmed'];
+            document.getElementById('rejected-count').textContent = outcomeCounts['Rejected'];
+            document.getElementById('interview-count').textContent = outcomeCounts['Interview'];
+            document.getElementById('waitlist-count').textContent = outcomeCounts['Waitlist'];
+            document.getElementById('pending-count').textContent = outcomeCounts['Pending'];
+            document.getElementById('no-response-count').textContent = outcomeCounts['No Response'];
+
+            document.getElementById('with-email').textContent = completionCounts.email;
+            document.getElementById('with-phone').textContent = completionCounts.phone;
+            document.getElementById('with-notes').textContent = completionCounts.notes;
+            document.getElementById('complete-profiles').textContent = completionCounts.complete;
+
+            // Calculate success rate
+            const totalOutcomes = Object.values(outcomeCounts).reduce((a, b) => a + b, 0);
+            const successfulOutcomes = outcomeCounts['Confirmed'] + outcomeCounts['Interview'];
+            const successRate = totalOutcomes > 0 ? Math.round((successfulOutcomes / totalOutcomes) * 100) : 0;
+            document.getElementById('success-rate').textContent = successRate + '%';
+        }
+
+        function createGridRow(index, sectorName) {
+            const rowContainer = document.createElement('div');
+            
+            const row = document.createElement('div');
+            row.className = 'grid-row';
+            row.innerHTML = `
+                <div class="grid-cell">${index}</div>
+                <div class="grid-cell">
+                    <input type="text" placeholder="Company Name" id="${sectorName}-company-${index}">
+                </div>
+                <div class="grid-cell">
+                    <input type="text" placeholder="Contact Person" id="${sectorName}-contact-${index}">
+                </div>
+                <div class="grid-cell">
+                    <input type="text" placeholder="Job Title" id="${sectorName}-title-${index}">
+                </div>
+                <div class="grid-cell">
+                    <input type="email" placeholder="Email Address" id="${sectorName}-email-${index}">
+                </div>
+                <div class="grid-cell">
+                    <input type="tel" placeholder="Phone Number" id="${sectorName}-phone-${index}">
+                </div>
+                <div class="grid-cell">
+                    <button class="btn-small btn-bootcamp" onclick="toggleBootcamp(this)">Bootcamp</button>
+                </div>
+                <div class="grid-cell">
+                    <div class="email-buttons">
+                        <button class="btn-small btn-email" onclick="toggleEmail(this)">Send</button>
+                        <button class="btn-small btn-call" onclick="toggleCall(this)">Call</button>
+                    </div>
+                </div>
+                <div class="grid-cell">
+                    
+                </div>
+                <div class="grid-cell">
+                    <select class="outcome-select" onchange="updateOutcomeColor(this)">
+                        <option value="">Select Outcome</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Waitlist">Waitlist</option>
+                        <option value="Pending">Pending</option>
+                        <option value="No Response">No Response</option>
+                    </select>
+                </div>
+            `;
+
+            const notesRow = document.createElement('div');
+            notesRow.className = 'notes-row';
+            notesRow.innerHTML = `
+                <div style="color: #7f8c8d; font-size: 0.8em; font-weight: 600;">Notes:</div>
+                <div class="grid-cell">
+                    <input type="text" placeholder="Add notes..." id="${sectorName}-notes-${index}" style="width: 100%; border: 1px solid #bdc3c7;">
+                </div>
+            `;
+
+            rowContainer.appendChild(row);
+            rowContainer.appendChild(notesRow);
+            return rowContainer;
+        }
+
+        function updateOutcomeColor(selectElement) {
+            const row = selectElement.closest('.grid-row');
+            const value = selectElement.value.toLowerCase().replace(' ', '-');
+            
+            // Remove all outcome classes
+            row.classList.remove('outcome-confirmed', 'outcome-rejected', 'outcome-interview', 
+                              'outcome-waitlist', 'outcome-pending', 'outcome-no-response');
+            
+            // Add the appropriate class
+            if (value) {
+                row.classList.add(`outcome-${value}`);
+            }
+            
+            // Trigger dashboard update
+            updateDashboard();
+        }
+
+        function toggleBootcamp(button) {
+            const options = ['Bootcamp', 'Prince 2', 'AI', 'Microsoft'];
+            const currentIndex = options.indexOf(button.textContent);
+            const nextIndex = (currentIndex + 1) % options.length;
+            button.textContent = options[nextIndex];
+            
+            // Color coding for different bootcamp types
+            const colors = ['#8e44ad', '#e74c3c', '#3498db', '#27ae60'];
+            button.style.background = colors[nextIndex];
+            
+            // Trigger dashboard update
+            updateDashboard();
+        }
+
+        function toggleEmail(button) {
+            if (button.textContent === 'Send') {
+                button.textContent = 'Sent';
+                button.style.background = '#f39c12';
+            } else {
+                button.textContent = 'Send';
+                button.style.background = '#2ecc71';
+            }
+            
+            // Trigger dashboard update
+            updateDashboard();
+        }
+
+        function toggleCall(button) {
+            if (button.textContent === 'Call') {
+                button.textContent = 'Called';
+                button.style.background = '#27ae60';
+            } else {
+                button.textContent = 'Call';
+                button.style.background = '#f39c12';
+            }
+            
+            // Trigger dashboard update
+            updateDashboard();
+        }
+
+        function toggleVisit(button) {
+            if (button.textContent === 'Visit') {
+                button.textContent = 'Visited';
+                button.style.background = '#27ae60';
+            } else {
+                button.textContent = 'Visit';
+                button.style.background = '#e74c3c';
+            }
+            
+            // Trigger dashboard update
+            updateDashboard();
+        }
+
+        function exportAllToCSV() {
+            let csvContent = 'Sector,#,Company Name,Contact Person,Title,Email,Phone,Bootcamp,Email Status,Call Status,Outcome,Notes\n';
+            
+            const sectors = [
+                { name: 'Tourism & Hospitality', id: 'tourism' },
+                { name: 'Agriculture & Food Production', id: 'agriculture' },
+                { name: 'Renewable Energy', id: 'energy' }
+            ];
+
+            sectors.forEach(sector => {
+                for (let i = 1; i <= 40; i++) {
+                    const company = document.getElementById(`${sector.id}-company-${i}`).value || '';
+                    const contact = document.getElementById(`${sector.id}-contact-${i}`).value || '';
+                    const title = document.getElementById(`${sector.id}-title-${i}`).value || '';
+                    const email = document.getElementById(`${sector.id}-email-${i}`).value || '';
+                    const phone = document.getElementById(`${sector.id}-phone-${i}`).value || '';
+                    const notes = document.getElementById(`${sector.id}-notes-${i}`).value || '';
+                    
+                    const bootcampBtn = document.querySelector(`#${sector.id}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-bootcamp`);
+                    const emailBtn = document.querySelector(`#${sector.id}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-email`);
+                    const callBtn = document.querySelector(`#${sector.id}-grid .grid-row:nth-child(${(i * 2) - 1}) .btn-call`);
+                    const outcomeSelect = document.querySelector(`#${sector.id}-grid .grid-row:nth-child(${(i * 2) - 1}) .outcome-select`);
+                    
+                    const bootcamp = bootcampBtn ? bootcampBtn.textContent : 'Bootcamp';
+                    const emailStatus = emailBtn ? emailBtn.textContent : 'Send';
+                    const callStatus = callBtn ? callBtn.textContent : 'Call';
+                    const outcome = outcomeSelect ? outcomeSelect.value : '';
+
+                    csvContent += `"${sector.name}",${i},"${company}","${contact}","${title}","${email}","${phone}","${bootcamp}","${emailStatus}","${callStatus}","${outcome}","${notes}"\n`;
+                }
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `rob_cornwall_business_tracker_v3_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                const inputs = document.querySelectorAll('input');
+                const selects = document.querySelectorAll('select');
+                const buttons = document.querySelectorAll('.btn-small');
+                
+                inputs.forEach(input => input.value = '');
+                selects.forEach(select => select.selectedIndex = 0);
+                
+                buttons.forEach(button => {
+                    if (button.classList.contains('btn-bootcamp')) {
+                        button.textContent = 'Bootcamp';
+                        button.style.background = '#8e44ad';
+                    } else if (button.classList.contains('btn-email')) {
+                        button.textContent = 'Send';
+                        button.style.background = '#2ecc71';
+                    } else if (button.classList.contains('btn-call')) {
+                        button.textContent = 'Call';
+                        button.style.background = '#f39c12';
+                    }
+                });
+
+                // Remove outcome color classes
+                const rows = document.querySelectorAll('.grid-row');
+                rows.forEach(row => {
+                    row.classList.remove('outcome-confirmed', 'outcome-rejected', 'outcome-interview', 
+                                      'outcome-waitlist', 'outcome-pending', 'outcome-no-response');
+                });
+                
+                // Update dashboard after clearing
+                updateDashboard();
+            }
+        }
+
+        function uploadCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csv = e.target.result;
+                const lines = csv.split('\n');
+                const headers = lines[0].split(',');
+                
+                // Clear existing data first
+                clearAllData();
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const values = line.split(',').map(val => val.replace(/"/g, '').trim());
+                    
+                    if (values.length >= 6) {
+                        const sector = values[0].toLowerCase();
+                        const rowNumber = parseInt(values[1]);
+                        const company = values[2];
+                        const contact = values[3];
+                        const title = values[4];
+                        const email = values[5];
+                        const phone = values[6];
+                        const outcome = values[10] || '';
+                        const notes = values[11] || '';
+                        
+                        let sectorName = '';
+                        if (sector.includes('tourism')) sectorName = 'tourism';
+                        else if (sector.includes('agriculture')) sectorName = 'agriculture';
+                        else if (sector.includes('energy')) sectorName = 'energy';
+                        
+                        if (sectorName && rowNumber >= 1 && rowNumber <= 40) {
+                            // Fill in the data
+                            const companyInput = document.getElementById(`${sectorName}-company-${rowNumber}`);
+                            const contactInput = document.getElementById(`${sectorName}-contact-${rowNumber}`);
+                            const titleInput = document.getElementById(`${sectorName}-title-${rowNumber}`);
+                            const emailInput = document.getElementById(`${sectorName}-email-${rowNumber}`);
+                            const phoneInput = document.getElementById(`${sectorName}-phone-${rowNumber}`);
+                            const notesInput = document.getElementById(`${sectorName}-notes-${rowNumber}`);
+                            
+                            if (companyInput) companyInput.value = company;
+                            if (contactInput) contactInput.value = contact;
+                            if (titleInput) titleInput.value = title;
+                            if (emailInput) emailInput.value = email;
+                            if (phoneInput) phoneInput.value = phone;
+                            if (notesInput) notesInput.value = notes;
+                            
+                            // Set outcome if provided
+                            if (outcome) {
+                                const outcomeSelect = document.querySelector(`#${sectorName}-grid .grid-row:nth-child(${(rowNumber * 2) - 1}) .outcome-select`);
+                                if (outcomeSelect) {
+                                    outcomeSelect.value = outcome;
+                                    updateOutcomeColor(outcomeSelect);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Update dashboard after upload
+                updateDashboard();
+                alert('CSV uploaded successfully!');
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Initialize the page when it loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGrids();
+            initializeFirebase();
+        });
+    </script>
+</body>
+</html>
