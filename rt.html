@@ -1331,8 +1331,8 @@
                     const values = line.split(',').map(val => val.replace(/"/g, '').trim());
                     
                     if (values.length >= 6) {
-                        const sector = values[0].toLowerCase();
-                        const rowNumber = parseInt(values[1]);
+                        const rowNumber = parseInt(values[0]);
+                        const sector = values[1].toLowerCase();
                         const company = values[2];
                         const contact = values[3];
                         const title = values[4];
