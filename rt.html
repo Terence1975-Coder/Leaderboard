@@ -1,4 +1,18 @@
-<!DOCTYPE html>
+function exportAllToCSV() {
+            let csvContent = 'Sector,#,Company Name,Contact Person,Title,Email,Phone,Bootcamp,Email Status,Call Status,Outcome,Notes\n';
+            
+            const sectors = [
+                { name: 'Tourism & Hospitality', id: 'tourism' },
+                { name: 'Agriculture & Food Production', id: 'agriculture' },
+                { name: 'Renewable Energy', id: 'energy' }
+            ];
+
+            sectors.forEach(sector => {
+                for (let i = 1; i <= 120; i++) {
+                    const company = document.getElementById(`${sector.id}-company-${i}`)?.value || '';
+                    const contact = document.getElementById(`${sector.id}-contact-${i}`)?.value || '';
+                    const title = document.getElementById(`${sector.id}-title-${i}`)?.value || '';
+                    const email = document.getElementById(`${sector.id}-email-${i<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -90,6 +104,16 @@
         .clear-btn { background: #e74c3c; color: white; }
         .clear-btn:hover { background: #c0392b; transform: translateY(-2px); }
 
+        .more-btn { background: #9b59b6; color: white; }
+        .more-btn:hover { background: #8e44ad; transform: translateY(-2px); }
+
+        .more-button-container {
+            text-align: center;
+            padding: 20px;
+            border-top: 2px solid #e9ecef;
+            background: #f8f9fa;
+        }
+
         .sector {
             margin: 30px;
             background: white;
@@ -114,7 +138,7 @@
 
         .grid-header {
             display: grid;
-            grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 80px 60px 60px 120px;
+            grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 80px 60px 60px 120px;
             gap: 10px;
             padding: 15px 10px;
             background: #34495e;
@@ -126,7 +150,7 @@
 
         .grid-row {
             display: grid;
-            grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 80px 60px 60px 120px;
+            grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 80px 60px 60px 120px;
             gap: 10px;
             padding: 10px;
             border-bottom: 1px solid #e9ecef;
@@ -135,7 +159,7 @@
 
         .notes-row {
             display: grid;
-            grid-template-columns: 40px 1fr;
+            grid-template-columns: 40px 1fr 1fr;
             gap: 10px;
             padding: 5px 10px;
             background-color: #f8f9fa;
@@ -510,10 +534,11 @@
 
         <!-- Tourism & Hospitality Sector -->
         <div class="sector">
-            <div class="sector-header">Tourism & Hospitality</div>
             <div class="grid-container">
                 <div class="grid-header">
                     <div>#</div>
+                    <div>Sales Lead</div>
+                    <div>Industry</div>
                     <div>Company Name</div>
                     <div>Contact Person</div>
                     <div>Title</div>
@@ -525,15 +550,20 @@
                     <div>Outcome</div>
                 </div>
                 <div id="tourism-grid"></div>
+                <div class="more-button-container">
+                    <button onclick="addMoreRows('tourism')" class="btn more-btn" id="tourism-more-btn">More</button>
+                </div>
+                <div id="tourism-extra-grid" style="display: none;"></div>
             </div>
         </div>
 
         <!-- Agriculture & Food Production Sector -->
         <div class="sector">
-            <div class="sector-header">Agriculture & Food Production</div>
             <div class="grid-container">
                 <div class="grid-header">
                     <div>#</div>
+                    <div>Sales Lead</div>
+                    <div>Industry</div>
                     <div>Company Name</div>
                     <div>Contact Person</div>
                     <div>Email</div>
@@ -545,15 +575,20 @@
                     <div>Outcome</div>
                 </div>
                 <div id="agriculture-grid"></div>
+                <div class="more-button-container">
+                    <button onclick="addMoreRows('agriculture')" class="btn more-btn" id="agriculture-more-btn">More</button>
+                </div>
+                <div id="agriculture-extra-grid" style="display: none;"></div>
             </div>
         </div>
 
         <!-- Renewable Energy Sector -->
         <div class="sector">
-            <div class="sector-header">Renewable Energy</div>
             <div class="grid-container">
                 <div class="grid-header">
                     <div>#</div>
+                    <div>Sales Lead</div>
+                    <div>Industry</div>
                     <div>Company Name</div>
                     <div>Contact Person</div>
                     <div>Email</div>
@@ -565,6 +600,10 @@
                     <div>Outcome</div>
                 </div>
                 <div id="energy-grid"></div>
+                <div class="more-button-container">
+                    <button onclick="addMoreRows('energy')" class="btn more-btn" id="energy-more-btn">More</button>
+                </div>
+                <div id="energy-extra-grid" style="display: none;"></div>
             </div>
         </div>
     </div>
@@ -626,7 +665,10 @@
 
             sectors.forEach(sector => {
                 allData[sector] = {};
-                for (let i = 1; i <= 40; i++) {
+                // Check both main grid (1-100) and extra grid (101-120)
+                for (let i = 1; i <= 120; i++) {
+                    const salesLead = document.getElementById(`${sector}-saleslead-${i}`)?.value || '';
+                    const industry = document.getElementById(`${sector}-industry-${i}`)?.value || '';
                     const company = document.getElementById(`${sector}-company-${i}`)?.value || '';
                     const contact = document.getElementById(`${sector}-contact-${i}`)?.value || '';
                     const title = document.getElementById(`${sector}-title-${i}`)?.value || '';
@@ -634,14 +676,17 @@
                     const phone = document.getElementById(`${sector}-phone-${i}`)?.value || '';
                     const notes = document.getElementById(`${sector}-notes-${i}`)?.value || '';
 
-                    // Get button states - each entry has 2 elements (row + notes), so multiply by 2
-                    const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-bootcamp`);
-                    const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-email`);
-                    const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-call`);
-                    const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-visit`);
-                    const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .outcome-select`);
+                    // Get button states - fix selector issues
+                    const rowIndex = i;
+                    const bootcampBtn = document.querySelector(`#${sector}-bootcamp-${rowIndex}`);
+                    const emailBtn = document.querySelector(`#${sector}-email-btn-${rowIndex}`);
+                    const callBtn = document.querySelector(`#${sector}-call-btn-${rowIndex}`);
+                    const visitBtn = document.querySelector(`#${sector}-visit-btn-${rowIndex}`);
+                    const outcomeSelect = document.querySelector(`#${sector}-outcome-${rowIndex}`);
 
                     allData[sector][i] = {
+                        salesLead,
+                        industry,
                         company,
                         contact,
                         title,
@@ -769,11 +814,13 @@
                 sectors.forEach(sector => {
                     if (!data[sector]) return;
 
-                    for (let i = 1; i <= 40; i++) {
+                    for (let i = 1; i <= 120; i++) {
                         const rowData = data[sector][i];
                         if (!rowData) continue;
 
                         // Fill form fields
+                        const salesLeadInput = document.getElementById(`${sector}-saleslead-${i}`);
+                        const industryInput = document.getElementById(`${sector}-industry-${i}`);
                         const companyInput = document.getElementById(`${sector}-company-${i}`);
                         const contactInput = document.getElementById(`${sector}-contact-${i}`);
                         const titleInput = document.getElementById(`${sector}-title-${i}`);
@@ -781,6 +828,8 @@
                         const phoneInput = document.getElementById(`${sector}-phone-${i}`);
                         const notesInput = document.getElementById(`${sector}-notes-${i}`);
 
+                        if (salesLeadInput) salesLeadInput.value = rowData.salesLead || '';
+                        if (industryInput) industryInput.value = rowData.industry || '';
                         if (companyInput) companyInput.value = rowData.company || '';
                         if (contactInput) contactInput.value = rowData.contact || '';
                         if (titleInput) titleInput.value = rowData.title || '';
@@ -788,12 +837,12 @@
                         if (phoneInput) phoneInput.value = rowData.phone || '';
                         if (notesInput) notesInput.value = rowData.notes || '';
 
-                        // Set button states - fix selector for proper row targeting
-                        const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-bootcamp`);
-                        const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-email`);
-                        const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-call`);
-                        const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-visit`);
-                        const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .outcome-select`);
+                        // Set button states - use direct ID selectors
+                        const bootcampBtn = document.querySelector(`#${sector}-bootcamp-${i}`);
+                        const emailBtn = document.querySelector(`#${sector}-email-btn-${i}`);
+                        const callBtn = document.querySelector(`#${sector}-call-btn-${i}`);
+                        const visitBtn = document.querySelector(`#${sector}-visit-btn-${i}`);
+                        const outcomeSelect = document.querySelector(`#${sector}-outcome-${i}`);
 
                         if (bootcampBtn && rowData.bootcamp) {
                             bootcampBtn.textContent = rowData.bootcamp;
@@ -842,13 +891,41 @@
 
             sectors.forEach(sector => {
                 const grid = document.getElementById(sector.id);
-                for (let i = 1; i <= 40; i++) {
+                for (let i = 1; i <= 100; i++) {
                     grid.appendChild(createGridRow(i, sector.name));
                 }
             });
             
             // Set up real-time dashboard updates
             setupDashboardUpdates();
+        }
+
+        // Function to add more rows (21 additional rows when clicked)
+        function addMoreRows(sectorName) {
+            const extraGrid = document.getElementById(`${sectorName}-extra-grid`);
+            const moreBtn = document.getElementById(`${sectorName}-more-btn`);
+            
+            if (extraGrid.style.display === 'none') {
+                // Show extra rows
+                extraGrid.style.display = 'block';
+                
+                // Create 20 additional rows (101-120)
+                for (let i = 101; i <= 120; i++) {
+                    extraGrid.appendChild(createGridRow(i, sectorName));
+                }
+                
+                moreBtn.textContent = 'Hide Extra';
+                moreBtn.style.background = '#e74c3c';
+            } else {
+                // Hide extra rows
+                extraGrid.style.display = 'none';
+                extraGrid.innerHTML = ''; // Clear the extra rows
+                moreBtn.textContent = 'More';
+                moreBtn.style.background = '#9b59b6';
+            }
+            
+            // Update dashboard after adding/removing rows
+            updateDashboard();
         }
 
         // Dashboard update functions
@@ -901,7 +978,8 @@
             let completionCounts = { email: 0, phone: 0, notes: 0, complete: 0 };
 
             sectors.forEach(sector => {
-                for (let i = 1; i <= 40; i++) {
+                // Check both main grid (1-100) and extra grid (101-120)
+                for (let i = 1; i <= 120; i++) {
                     const company = document.getElementById(`${sector}-company-${i}`);
                     const contact = document.getElementById(`${sector}-contact-${i}`);
                     const email = document.getElementById(`${sector}-email-${i}`);
@@ -913,8 +991,8 @@
                         totalActive++;
                         sectorActive[sector]++;
 
-                        // Count bootcamp types - fix selector
-                        const bootcampBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-bootcamp`);
+                        // Count bootcamp types
+                        const bootcampBtn = document.getElementById(`${sector}-bootcamp-${i}`);
                         if (bootcampBtn) {
                             const bootcampType = bootcampBtn.textContent;
                             if (bootcampCounts.hasOwnProperty(bootcampType)) {
@@ -922,10 +1000,10 @@
                             }
                         }
 
-                        // Count communications - fix selectors
-                        const emailBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-email`);
-                        const callBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-call`);
-                        const visitBtn = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .btn-visit`);
+                        // Count communications
+                        const emailBtn = document.getElementById(`${sector}-email-btn-${i}`);
+                        const callBtn = document.getElementById(`${sector}-call-btn-${i}`);
+                        const visitBtn = document.getElementById(`${sector}-visit-btn-${i}`);
 
                         if (emailBtn && emailBtn.textContent === 'Sent') {
                             communicationCounts.emails++;
@@ -937,8 +1015,8 @@
                             communicationCounts.visits++;
                         }
 
-                        // Count outcomes - fix selector
-                        const outcomeSelect = document.querySelector(`#${sector}-grid .grid-row:nth-child(${i * 2 - 1}) .outcome-select`);
+                        // Count outcomes
+                        const outcomeSelect = document.getElementById(`${sector}-outcome-${i}`);
                         if (outcomeSelect && outcomeSelect.value) {
                             outcomeCounts[outcomeSelect.value]++;
                         }
@@ -958,38 +1036,77 @@
                 }
             });
 
-            // Update dashboard displays
-            document.getElementById('active-contacts').textContent = totalActive;
-            document.getElementById('tourism-active').textContent = sectorActive.tourism;
-            document.getElementById('agriculture-active').textContent = sectorActive.agriculture;
-            document.getElementById('energy-active').textContent = sectorActive.energy;
+            // Update dashboard displays - with null checks
+            const activeContactsEl = document.getElementById('active-contacts');
+            if (activeContactsEl) activeContactsEl.textContent = totalActive;
+            
+            const tourismActiveEl = document.getElementById('tourism-active');
+            if (tourismActiveEl) tourismActiveEl.textContent = sectorActive.tourism;
+            
+            const agricultureActiveEl = document.getElementById('agriculture-active');
+            if (agricultureActiveEl) agricultureActiveEl.textContent = sectorActive.agriculture;
+            
+            const energyActiveEl = document.getElementById('energy-active');
+            if (energyActiveEl) energyActiveEl.textContent = sectorActive.energy;
 
-            document.getElementById('bootcamp-count').textContent = bootcampCounts['Bootcamp'];
-            document.getElementById('prince2-count').textContent = bootcampCounts['Prince 2'];
-            document.getElementById('ai-count').textContent = bootcampCounts['AI'];
-            document.getElementById('microsoft-count').textContent = bootcampCounts['Microsoft'];
+            const bootcampCountEl = document.getElementById('bootcamp-count');
+            if (bootcampCountEl) bootcampCountEl.textContent = bootcampCounts['Bootcamp'];
+            
+            const prince2CountEl = document.getElementById('prince2-count');
+            if (prince2CountEl) prince2CountEl.textContent = bootcampCounts['Prince 2'];
+            
+            const aiCountEl = document.getElementById('ai-count');
+            if (aiCountEl) aiCountEl.textContent = bootcampCounts['AI'];
+            
+            const microsoftCountEl = document.getElementById('microsoft-count');
+            if (microsoftCountEl) microsoftCountEl.textContent = bootcampCounts['Microsoft'];
 
-            document.getElementById('emails-sent').textContent = communicationCounts.emails;
-            document.getElementById('calls-made').textContent = communicationCounts.calls;
-            document.getElementById('visits-made').textContent = communicationCounts.visits;
+            const emailsSentEl = document.getElementById('emails-sent');
+            if (emailsSentEl) emailsSentEl.textContent = communicationCounts.emails;
+            
+            const callsMadeEl = document.getElementById('calls-made');
+            if (callsMadeEl) callsMadeEl.textContent = communicationCounts.calls;
+            
+            const visitsMadeEl = document.getElementById('visits-made');
+            if (visitsMadeEl) visitsMadeEl.textContent = communicationCounts.visits;
 
-            document.getElementById('confirmed-count').textContent = outcomeCounts['Confirmed'];
-            document.getElementById('rejected-count').textContent = outcomeCounts['Rejected'];
-            document.getElementById('interview-count').textContent = outcomeCounts['Interview'];
-            document.getElementById('waitlist-count').textContent = outcomeCounts['Waitlist'];
-            document.getElementById('pending-count').textContent = outcomeCounts['Pending'];
-            document.getElementById('no-response-count').textContent = outcomeCounts['No Response'];
+            const confirmedCountEl = document.getElementById('confirmed-count');
+            if (confirmedCountEl) confirmedCountEl.textContent = outcomeCounts['Confirmed'];
+            
+            const rejectedCountEl = document.getElementById('rejected-count');
+            if (rejectedCountEl) rejectedCountEl.textContent = outcomeCounts['Rejected'];
+            
+            const interviewCountEl = document.getElementById('interview-count');
+            if (interviewCountEl) interviewCountEl.textContent = outcomeCounts['Interview'];
+            
+            const waitlistCountEl = document.getElementById('waitlist-count');
+            if (waitlistCountEl) waitlistCountEl.textContent = outcomeCounts['Waitlist'];
+            
+            const pendingCountEl = document.getElementById('pending-count');
+            if (pendingCountEl) pendingCountEl.textContent = outcomeCounts['Pending'];
+            
+            const noResponseCountEl = document.getElementById('no-response-count');
+            if (noResponseCountEl) noResponseCountEl.textContent = outcomeCounts['No Response'];
 
-            document.getElementById('with-email').textContent = completionCounts.email;
-            document.getElementById('with-phone').textContent = completionCounts.phone;
-            document.getElementById('with-notes').textContent = completionCounts.notes;
-            document.getElementById('complete-profiles').textContent = completionCounts.complete;
+            const withEmailEl = document.getElementById('with-email');
+            if (withEmailEl) withEmailEl.textContent = completionCounts.email;
+            
+            const withPhoneEl = document.getElementById('with-phone');
+            if (withPhoneEl) withPhoneEl.textContent = completionCounts.phone;
+            
+            const withNotesEl = document.getElementById('with-notes');
+            if (withNotesEl) withNotesEl.textContent = completionCounts.notes;
+            
+            const completeProfilesEl = document.getElementById('complete-profiles');
+            if (completeProfilesEl) completeProfilesEl.textContent = completionCounts.complete;
 
             // Calculate success rate
             const totalOutcomes = Object.values(outcomeCounts).reduce((a, b) => a + b, 0);
             const successfulOutcomes = outcomeCounts['Confirmed'] + outcomeCounts['Interview'];
             const successRate = totalOutcomes > 0 ? Math.round((successfulOutcomes / totalOutcomes) * 100) : 0;
-            document.getElementById('success-rate').textContent = successRate + '%';
+            
+            const successRateEl = document.getElementById('success-rate');
+            if (successRateEl) successRateEl.textContent = successRate + '%';
         }
 
         function createGridRow(index, sectorName) {
@@ -999,6 +1116,12 @@
             row.className = 'grid-row';
             row.innerHTML = `
                 <div class="grid-cell">${index}</div>
+                <div class="grid-cell">
+                    <input type="text" placeholder="Sales Lead" id="${sectorName}-saleslead-${index}">
+                </div>
+                <div class="grid-cell">
+                    <input type="text" placeholder="Industry" id="${sectorName}-industry-${index}">
+                </div>
                 <div class="grid-cell">
                     <input type="text" placeholder="Company Name" id="${sectorName}-company-${index}">
                 </div>
@@ -1018,13 +1141,10 @@
                     <button class="btn-small btn-bootcamp" onclick="toggleBootcamp(this)" id="${sectorName}-bootcamp-${index}">Bootcamp</button>
                 </div>
                 <div class="grid-cell">
-                    <div class="email-buttons">
-                        <button class="btn-small btn-email" onclick="toggleEmail(this)" id="${sectorName}-email-btn-${index}">Send</button>
-                        <button class="btn-small btn-call" onclick="toggleCall(this)" id="${sectorName}-call-btn-${index}">Call</button>
-                    </div>
+                    <button class="btn-small btn-email" onclick="toggleEmail(this)" id="${sectorName}-email-btn-${index}">Send</button>
                 </div>
                 <div class="grid-cell">
-                    
+                    <button class="btn-small btn-call" onclick="toggleCall(this)" id="${sectorName}-call-btn-${index}">Call</button>
                 </div>
                 <div class="grid-cell">
                     <select class="outcome-select" onchange="updateOutcomeColor(this)" id="${sectorName}-outcome-${index}">
@@ -1043,6 +1163,7 @@
             notesRow.className = 'notes-row';
             notesRow.innerHTML = `
                 <div style="color: #7f8c8d; font-size: 0.8em; font-weight: 600;">Notes:</div>
+                <div></div>
                 <div class="grid-cell">
                     <input type="text" placeholder="Add notes..." id="${sectorName}-notes-${index}" style="width: 100%; border: 1px solid #bdc3c7;">
                 </div>
@@ -1276,6 +1397,35 @@
         // Initialize the page when it loads
         document.addEventListener('DOMContentLoaded', function() {
             initializeGrids();
+            function sortBySalesLead(sector) {
+    const gridId = `${sector}-grid`;
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+
+    // Get all rows (each row = 2 divs: data + notes)
+    const children = Array.from(grid.children);
+    const rowPairs = [];
+
+    for (let i = 0; i < children.length; i += 2) {
+        rowPairs.push({
+            row: children[i],
+            notes: children[i + 1],
+            salesLead: children[i].querySelector(`#${sector}-saleslead-${i/2 + 1}`)?.value?.toLowerCase() || ''
+        });
+    }
+
+    // Sort by salesLead field
+    rowPairs.sort((a, b) => a.salesLead.localeCompare(b.salesLead));
+
+    // Clear and re-append in sorted order
+    grid.innerHTML = '';
+    rowPairs.forEach(pair => {
+        grid.appendChild(pair.row);
+        grid.appendChild(pair.notes);
+    });
+
+    updateDashboard();
+}
             initializeFirebase();
         });
     </script>
