@@ -1,18 +1,4 @@
-function exportAllToCSV() {
-            let csvContent = 'Sector,#,Company Name,Contact Person,Title,Email,Phone,Bootcamp,Email Status,Call Status,Outcome,Notes\n';
-            
-            const sectors = [
-                { name: 'Tourism & Hospitality', id: 'tourism' },
-                { name: 'Agriculture & Food Production', id: 'agriculture' },
-                { name: 'Renewable Energy', id: 'energy' }
-            ];
-
-            sectors.forEach(sector => {
-                for (let i = 1; i <= 120; i++) {
-                    const company = document.getElementById(`${sector.id}-company-${i}`)?.value || '';
-                    const contact = document.getElementById(`${sector.id}-contact-${i}`)?.value || '';
-                    const title = document.getElementById(`${sector.id}-title-${i}`)?.value || '';
-                    const email = document.getElementById(`${sector.id}-email-${i<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
