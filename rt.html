@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cornwall Business Contact Tracker v3</title>
+    <title>Rob's Cornwall Business Contact Tracker v3</title>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -655,8 +655,8 @@
         function getAllData() {
             const allData = { tourism: {} };
 
-            // Check both main grid (1-100) and extra grid (101-120)
-            for (let i = 1; i <= 120; i++) {
+            // Check both main grid (1-100) and extra grid (101-200)
+            for (let i = 1; i <= 200; i++) {
                 const salesLead = document.getElementById(`tourism-saleslead-${i}`)?.value || '';
                 const industry = document.getElementById(`tourism-industry-${i}`)?.value || '';
                 const company = document.getElementById(`tourism-company-${i}`)?.value || '';
@@ -1310,7 +1310,7 @@
             }
         }
 
-        // FIXED CSV UPLOAD FUNCTION
+        // FIXED CSV UPLOAD FUNCTION - Preserves existing data
         function uploadCSV(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1320,10 +1320,21 @@
                 const csv = e.target.result;
                 const lines = csv.split('\n');
                 
-                let rowNumber = 1;
+                // Find the first available empty row
+                let startRowNumber = findFirstEmptyRow();
+                
+                if (startRowNumber > 120) {
+                    alert('No empty rows available. Maximum capacity is 120 rows.');
+                    return;
+                }
+                
+                console.log(`Starting CSV import from row ${startRowNumber}`);
+                
+                let currentRowNumber = startRowNumber;
+                let importedCount = 0;
                 
                 // Skip header row and process data
-                for (let i = 1; i < lines.length && rowNumber <= 120; i++) {
+                for (let i = 1; i < lines.length && currentRowNumber <= 120; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
                     
@@ -1352,70 +1363,74 @@
                         // Use the phone number from the most appropriate field
                         const phone = contactTel || csvPhone;
 
-                        // Fill in the data
-                        const salesLeadInput = document.getElementById(`tourism-saleslead-${rowNumber}`);
-                        const industryInput = document.getElementById(`tourism-industry-${rowNumber}`);
-                        const companyInput = document.getElementById(`tourism-company-${rowNumber}`);
-                        const contactInput = document.getElementById(`tourism-contact-${rowNumber}`);
-                        const phoneInput = document.getElementById(`tourism-phone-${rowNumber}`);
-                        const emailInput = document.getElementById(`tourism-email-${rowNumber}`);
-                        const regionInput = document.getElementById(`tourism-region-${rowNumber}`);
-                        const notesInput = document.getElementById(`tourism-notes-${rowNumber}`);
-                        
-                        if (salesLeadInput) salesLeadInput.value = salesLead;
-                        if (industryInput) industryInput.value = industry;
-                        if (companyInput) companyInput.value = company;
-                        if (contactInput) contactInput.value = contact;
-                        if (phoneInput) phoneInput.value = phone;
-                        if (emailInput) emailInput.value = email;
-                        if (regionInput) regionInput.value = region;
-                        
-                        // Combine notes from multiple fields
-                        let combinedNotes = '';
-                        if (notes) combinedNotes += notes;
-                        if (actionComments) combinedNotes += (combinedNotes ? ' | ' : '') + 'Action: ' + actionComments;
-                        if (chaseFollowUp) combinedNotes += (combinedNotes ? ' | ' : '') + 'Follow-up: ' + chaseFollowUp;
-                        
-                        if (notesInput) notesInput.value = combinedNotes;
-                        
-                        // Set button states
-                        const bootcampBtn = document.getElementById(`tourism-bootcamp-${rowNumber}`);
-                        if (bootcampBtn && bootcamp) {
-                            const bootcampOptions = ['Bootcamp', 'Prince 2', 'AI', 'Microsoft'];
-                            const bootcampText = bootcampOptions.includes(bootcamp) ? bootcamp : 'Bootcamp';
-                            bootcampBtn.textContent = bootcampText;
-                            const bootcampColors = { 'Bootcamp': '#8e44ad', 'Prince 2': '#e74c3c', 'AI': '#3498db', 'Microsoft': '#27ae60' };
-                            bootcampBtn.style.background = bootcampColors[bootcampText] || '#8e44ad';
-                        }
-                        
-                        const emailBtn = document.getElementById(`tourism-email-btn-${rowNumber}`);
-                        if (emailBtn && emailSent) {
-                            const emailStatus = (emailSent.toLowerCase() === 'yes' || emailSent.toLowerCase() === 'sent') ? 'Sent' : 'Send';
-                            emailBtn.textContent = emailStatus;
-                            emailBtn.style.background = emailStatus === 'Sent' ? '#f39c12' : '#2ecc71';
-                        }
-                        
-                        const callBtn = document.getElementById(`tourism-call-btn-${rowNumber}`);
-                        if (callBtn && spoke) {
-                            const callStatus = (spoke.toLowerCase() === 'yes' || spoke.toLowerCase() === 'called') ? 'Called' : 'Call';
-                            callBtn.textContent = callStatus;
-                            callBtn.style.background = callStatus === 'Called' ? '#27ae60' : '#f39c12';
-                        }
-                        
-                        // Set outcome if provided
-                        if (outcome) {
-                            const outcomeSelect = document.getElementById(`tourism-outcome-${rowNumber}`);
-                            if (outcomeSelect) {
-                                const outcomeOptions = ['Confirmed', 'Rejected', 'Interview', 'Waitlist', 'Pending', 'No Response'];
-                                const outcomeValue = outcomeOptions.find(opt => opt.toLowerCase() === outcome.toLowerCase()) || '';
-                                if (outcomeValue) {
-                                    outcomeSelect.value = outcomeValue;
-                                    updateOutcomeColor(outcomeSelect);
+                        // Only import if there's meaningful data (company or contact name)
+                        if (company.trim() || contact.trim()) {
+                            // Fill in the data
+                            const salesLeadInput = document.getElementById(`tourism-saleslead-${currentRowNumber}`);
+                            const industryInput = document.getElementById(`tourism-industry-${currentRowNumber}`);
+                            const companyInput = document.getElementById(`tourism-company-${currentRowNumber}`);
+                            const contactInput = document.getElementById(`tourism-contact-${currentRowNumber}`);
+                            const phoneInput = document.getElementById(`tourism-phone-${currentRowNumber}`);
+                            const emailInput = document.getElementById(`tourism-email-${currentRowNumber}`);
+                            const regionInput = document.getElementById(`tourism-region-${currentRowNumber}`);
+                            const notesInput = document.getElementById(`tourism-notes-${currentRowNumber}`);
+                            
+                            if (salesLeadInput) salesLeadInput.value = salesLead;
+                            if (industryInput) industryInput.value = industry;
+                            if (companyInput) companyInput.value = company;
+                            if (contactInput) contactInput.value = contact;
+                            if (phoneInput) phoneInput.value = phone;
+                            if (emailInput) emailInput.value = email;
+                            if (regionInput) regionInput.value = region;
+                            
+                            // Combine notes from multiple fields
+                            let combinedNotes = '';
+                            if (notes) combinedNotes += notes;
+                            if (actionComments) combinedNotes += (combinedNotes ? ' | ' : '') + 'Action: ' + actionComments;
+                            if (chaseFollowUp) combinedNotes += (combinedNotes ? ' | ' : '') + 'Follow-up: ' + chaseFollowUp;
+                            
+                            if (notesInput) notesInput.value = combinedNotes;
+                            
+                            // Set button states
+                            const bootcampBtn = document.getElementById(`tourism-bootcamp-${currentRowNumber}`);
+                            if (bootcampBtn && bootcamp) {
+                                const bootcampOptions = ['Bootcamp', 'Prince 2', 'AI', 'Microsoft'];
+                                const bootcampText = bootcampOptions.includes(bootcamp) ? bootcamp : 'Bootcamp';
+                                bootcampBtn.textContent = bootcampText;
+                                const bootcampColors = { 'Bootcamp': '#8e44ad', 'Prince 2': '#e74c3c', 'AI': '#3498db', 'Microsoft': '#27ae60' };
+                                bootcampBtn.style.background = bootcampColors[bootcampText] || '#8e44ad';
+                            }
+                            
+                            const emailBtn = document.getElementById(`tourism-email-btn-${currentRowNumber}`);
+                            if (emailBtn && emailSent) {
+                                const emailStatus = (emailSent.toLowerCase() === 'yes' || emailSent.toLowerCase() === 'sent') ? 'Sent' : 'Send';
+                                emailBtn.textContent = emailStatus;
+                                emailBtn.style.background = emailStatus === 'Sent' ? '#f39c12' : '#2ecc71';
+                            }
+                            
+                            const callBtn = document.getElementById(`tourism-call-btn-${currentRowNumber}`);
+                            if (callBtn && spoke) {
+                                const callStatus = (spoke.toLowerCase() === 'yes' || spoke.toLowerCase() === 'called') ? 'Called' : 'Call';
+                                callBtn.textContent = callStatus;
+                                callBtn.style.background = callStatus === 'Called' ? '#27ae60' : '#f39c12';
+                            }
+                            
+                            // Set outcome if provided
+                            if (outcome) {
+                                const outcomeSelect = document.getElementById(`tourism-outcome-${currentRowNumber}`);
+                                if (outcomeSelect) {
+                                    const outcomeOptions = ['Confirmed', 'Rejected', 'Interview', 'Waitlist', 'Pending', 'No Response'];
+                                    const outcomeValue = outcomeOptions.find(opt => opt.toLowerCase() === outcome.toLowerCase()) || '';
+                                    if (outcomeValue) {
+                                        outcomeSelect.value = outcomeValue;
+                                        updateOutcomeColor(outcomeSelect);
+                                    }
                                 }
                             }
+                            
+                            currentRowNumber++;
+                            importedCount++;
                         }
-                        
-                        rowNumber++;
                     }
                 }
                 
@@ -1425,10 +1440,28 @@
                 // Update filter options after CSV upload
                 setTimeout(updateSalesLeadFilter, 1000);
                 
-                alert(`CSV uploaded successfully! Imported ${rowNumber - 1} rows.`);
+                alert(`CSV uploaded successfully! Imported ${importedCount} new rows starting from row ${startRowNumber}.\nExisting data preserved.`);
             };
             
             reader.readAsText(file);
+        }
+
+        // Helper function to find the first empty row
+        function findFirstEmptyRow() {
+            for (let i = 1; i <= 120; i++) {
+                const company = document.getElementById(`tourism-company-${i}`);
+                const contact = document.getElementById(`tourism-contact-${i}`);
+                const email = document.getElementById(`tourism-email-${i}`);
+                
+                // Consider a row empty if it has no company name, contact name, or email
+                if (company && contact && email) {
+                    const hasData = company.value.trim() || contact.value.trim() || email.value.trim();
+                    if (!hasData) {
+                        return i; // Return the first empty row number
+                    }
+                }
+            }
+            return 121; // No empty rows found (exceeds maximum)
         }
 
         // Helper function to parse CSV line handling quoted values
