@@ -113,7 +113,7 @@
 
         .grid-header {
             display: grid;
-            grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 80px 60px 60px 120px;
+            grid-template-columns: 40px 150px 120px 200px 180px 200px 250px 120px;
             gap: 10px;
             padding: 15px 10px;
             background: #34495e;
@@ -125,11 +125,58 @@
 
         .grid-row {
             display: grid;
-            grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 80px 60px 60px 120px;
+            grid-template-columns: 40px 150px 120px 200px 180px 200px 250px 120px;
             gap: 10px;
             padding: 10px;
             border-bottom: 1px solid #e9ecef;
             transition: all 0.3s ease;
+        }
+
+        .actions-row {
+            display: grid;
+            grid-template-columns: 40px 120px 120px 120px 150px auto;
+            gap: 10px;
+            padding: 8px 10px;
+            background-color: #f1f2f6;
+            border-bottom: 1px solid #e9ecef;
+            align-items: center;
+        }
+
+        .actions-row.no-border {
+            border-bottom: none;
+        }
+
+        .contact-field {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .contact-field input {
+            flex: 1;
+        }
+
+        .copy-btn {
+            padding: 4px 8px;
+            font-size: 0.7em;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: #95a5a6;
+            color: white;
+            min-width: 40px;
+        }
+
+        .copy-btn:hover {
+            background: #7f8c8d;
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: #27ae60;
+            transform: scale(1.1);
         }
 
         .grid-row.no-border {
@@ -156,8 +203,9 @@
             gap: 3px;
         }
 
-        .grid-row:nth-child(even) { background-color: #f8f9fa; }
-        .grid-row:nth-child(odd) { background-color: #ffffff; }
+        .grid-row:nth-child(3n+1) { background-color: #ffffff; }
+        .grid-row:nth-child(3n+2) { background-color: #f8f9fa; }
+        .grid-row:nth-child(3n) { background-color: #ffffff; }
 
         /* Outcome color coding */
         .outcome-confirmed { 
@@ -214,6 +262,7 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
+            width: 100%;
         }
 
         .btn-bootcamp { background: #8e44ad; color: white; }
@@ -231,6 +280,7 @@
         .outcome-select {
             font-weight: 600;
             color: #2c3e50;
+            width: 100%;
         }
 
         .outcome-select option[value="Confirmed"] { color: #27ae60; }
@@ -397,7 +447,7 @@
         }
 
         @media (max-width: 768px) {
-            .grid-header, .grid-row {
+            .grid-header, .grid-row, .actions-row {
                 grid-template-columns: 1fr;
                 text-align: left;
             }
@@ -426,6 +476,7 @@
         <div class="dashboard">
             <div class="dashboard-header">
                 <h2>Contact Activity Dashboard</h2>
+                <div id="filter-indicator" style="font-size: 1.2em; margin-top: 10px; color: #3498db; font-weight: 600;"></div>
             </div>
             <div class="dashboard-content">
                 <div class="stats-grid">
@@ -433,11 +484,6 @@
                     <div class="stat-card">
                         <div class="stat-title">Active Contacts</div>
                         <div class="stat-number" id="active-contacts">0</div>
-                        <div class="stat-breakdown">
-                            <div>Tourism: <span id="tourism-active">0</span></div>
-                            <div>Agriculture: <span id="agriculture-active">0</span></div>
-                            <div>Energy: <span id="energy-active">0</span></div>
-                        </div>
                     </div>
 
                     <!-- Bootcamp Stats -->
@@ -457,7 +503,6 @@
                         <div class="stat-breakdown">
                             <div>Emails Sent: <span id="emails-sent">0</span></div>
                             <div>Calls Made: <span id="calls-made">0</span></div>
-                            <div>Visits Made: <span id="visits-made">0</span></div>
                         </div>
                     </div>
 
@@ -512,24 +557,21 @@
 
         <!-- Sort Controls -->
         <div class="controls" style="background: #e9ecef;">
-            <select id="sort-sector" class="btn" style="background: #3498db; color: white;">
-                <option value="">Select Sector</option>
-                <option value="tourism">Tourism & Hospitality</option>
-                <option value="agriculture">Agriculture & Food</option>
-                <option value="energy">Renewable Energy</option>
+            <select id="filter-saleslead" class="btn" style="background: #e67e22; color: white;" onchange="applyFilter()">
+                <option value="">Show All Sales Leads</option>
             </select>
+            <button onclick="updateSalesLeadFilter()" class="btn" style="background: #16a085; color: white;">Refresh Filter</button>
             <select id="sort-field" class="btn" style="background: #9b59b6; color: white;">
                 <option value="">Select Field</option>
                 <option value="saleslead">Sales Lead</option>
                 <option value="industry">Industry</option>
                 <option value="company">Company Name</option>
                 <option value="contact">Contact Person</option>
-                <option value="title">Title</option>
                 <option value="email">Email</option>
                 <option value="outcome">Outcome</option>
             </select>
             <button onclick="sortData()" class="btn" style="background: #27ae60; color: white;">Apply Sort</button>
-            <button onclick="resetSort()" class="btn" style="background: #e74c3c; color: white;">Reset Order</button>
+            <button onclick="resetView()" class="btn" style="background: #e74c3c; color: white;">Show All Rows</button>
         </div>
 
         <!-- Firebase Status Indicator -->
@@ -546,69 +588,15 @@
                     <div>Industry</div>
                     <div>Company Name</div>
                     <div>Contact Person</div>
-                    <div>Title</div>
-                    <div>Email</div>
-                    <div>Phone</div>
-                    <div>Bootcamp</div>
-                    <div>Email</div>
-                    <div>Call</div>
-                    <div>Outcome</div>
+                    <div>Phone Number</div>
+                    <div>Email Address</div>
+                    <div>Region</div>
                 </div>
                 <div id="tourism-grid"></div>
                 <div class="more-button-container">
                     <button onclick="addMoreRows('tourism')" class="btn more-btn" id="tourism-more-btn">More</button>
                 </div>
                 <div id="tourism-extra-grid" style="display: none;"></div>
-            </div>
-        </div>
-
-        <!-- Agriculture & Food Production Sector -->
-        <div class="sector">
-            <div class="grid-container">
-                <div class="grid-header">
-                    <div>#</div>
-                    <div>Sales Lead</div>
-                    <div>Industry</div>
-                    <div>Company Name</div>
-                    <div>Contact Person</div>
-                    <div>Title</div>
-                    <div>Email</div>
-                    <div>Phone</div>
-                    <div>Bootcamp</div>
-                    <div>Email</div>
-                    <div>Call</div>
-                    <div>Outcome</div>
-                </div>
-                <div id="agriculture-grid"></div>
-                <div class="more-button-container">
-                    <button onclick="addMoreRows('agriculture')" class="btn more-btn" id="agriculture-more-btn">More</button>
-                </div>
-                <div id="agriculture-extra-grid" style="display: none;"></div>
-            </div>
-        </div>
-
-        <!-- Renewable Energy Sector -->
-        <div class="sector">
-            <div class="grid-container">
-                <div class="grid-header">
-                    <div>#</div>
-                    <div>Sales Lead</div>
-                    <div>Industry</div>
-                    <div>Company Name</div>
-                    <div>Contact Person</div>
-                    <div>Title</div>
-                    <div>Email</div>
-                    <div>Phone</div>
-                    <div>Bootcamp</div>
-                    <div>Email</div>
-                    <div>Call</div>
-                    <div>Outcome</div>
-                </div>
-                <div id="energy-grid"></div>
-                <div class="more-button-container">
-                    <button onclick="addMoreRows('energy')" class="btn more-btn" id="energy-more-btn">More</button>
-                </div>
-                <div id="energy-extra-grid" style="display: none;"></div>
             </div>
         </div>
     </div>
@@ -665,47 +653,40 @@
         }
 
         function getAllData() {
-            const sectors = ['tourism', 'agriculture', 'energy'];
-            const allData = {};
+            const allData = { tourism: {} };
 
-            sectors.forEach(sector => {
-                allData[sector] = {};
-                // Check both main grid (1-100) and extra grid (101-120)
-                for (let i = 1; i <= 120; i++) {
-                    const salesLead = document.getElementById(`${sector}-saleslead-${i}`)?.value || '';
-                    const industry = document.getElementById(`${sector}-industry-${i}`)?.value || '';
-                    const company = document.getElementById(`${sector}-company-${i}`)?.value || '';
-                    const contact = document.getElementById(`${sector}-contact-${i}`)?.value || '';
-                    const title = document.getElementById(`${sector}-title-${i}`)?.value || '';
-                    const email = document.getElementById(`${sector}-email-${i}`)?.value || '';
-                    const phone = document.getElementById(`${sector}-phone-${i}`)?.value || '';
-                    const notes = document.getElementById(`${sector}-notes-${i}`)?.value || '';
+            // Check both main grid (1-100) and extra grid (101-120)
+            for (let i = 1; i <= 120; i++) {
+                const salesLead = document.getElementById(`tourism-saleslead-${i}`)?.value || '';
+                const industry = document.getElementById(`tourism-industry-${i}`)?.value || '';
+                const company = document.getElementById(`tourism-company-${i}`)?.value || '';
+                const contact = document.getElementById(`tourism-contact-${i}`)?.value || '';
+                const phone = document.getElementById(`tourism-phone-${i}`)?.value || '';
+                const email = document.getElementById(`tourism-email-${i}`)?.value || '';
+                const region = document.getElementById(`tourism-region-${i}`)?.value || '';
+                const notes = document.getElementById(`tourism-notes-${i}`)?.value || '';
 
-                    // Get button states - fix selector issues
-                    const rowIndex = i;
-                    const bootcampBtn = document.querySelector(`#${sector}-bootcamp-${rowIndex}`);
-                    const emailBtn = document.querySelector(`#${sector}-email-btn-${rowIndex}`);
-                    const callBtn = document.querySelector(`#${sector}-call-btn-${rowIndex}`);
-                    const visitBtn = document.querySelector(`#${sector}-visit-btn-${rowIndex}`);
-                    const outcomeSelect = document.querySelector(`#${sector}-outcome-${rowIndex}`);
+                // Get button states
+                const bootcampBtn = document.querySelector(`#tourism-bootcamp-${i}`);
+                const emailBtn = document.querySelector(`#tourism-email-btn-${i}`);
+                const callBtn = document.querySelector(`#tourism-call-btn-${i}`);
+                const outcomeSelect = document.querySelector(`#tourism-outcome-${i}`);
 
-                    allData[sector][i] = {
-                        salesLead,
-                        industry,
-                        company,
-                        contact,
-                        title,
-                        email,
-                        phone,
-                        notes,
-                        bootcamp: bootcampBtn?.textContent || 'Bootcamp',
-                        emailStatus: emailBtn?.textContent || 'Send',
-                        callStatus: callBtn?.textContent || 'Call',
-                        visitStatus: visitBtn?.textContent || 'Visit',
-                        outcome: outcomeSelect?.value || ''
-                    };
-                }
-            });
+                allData.tourism[i] = {
+                    salesLead,
+                    industry,
+                    company,
+                    contact,
+                    phone,
+                    email,
+                    region,
+                    notes,
+                    bootcamp: bootcampBtn?.textContent || 'Bootcamp',
+                    emailStatus: emailBtn?.textContent || 'Send',
+                    callStatus: callBtn?.textContent || 'Call',
+                    outcome: outcomeSelect?.value || ''
+                };
+            }
 
             return allData;
         }
@@ -742,12 +723,10 @@
             const allData = getAllData();
             let hasData = false;
             
-            Object.values(allData).forEach(sector => {
-                Object.values(sector).forEach(row => {
-                    if (row.company || row.contact) {
-                        hasData = true;
-                    }
-                });
+            Object.values(allData.tourism).forEach(row => {
+                if (row.company || row.contact) {
+                    hasData = true;
+                }
             });
 
             if (hasData) {
@@ -759,8 +738,6 @@
                 }).then(() => {
                     updateFirebaseStatus('connected');
                     console.log('Auto-saved to Firebase at:', timestamp);
-                    
-                    // Show brief save confirmation
                     showSaveConfirmation();
                 }).catch((error) => {
                     updateFirebaseStatus('disconnected');
@@ -770,7 +747,6 @@
         }
 
         function showSaveConfirmation() {
-            // Create temporary save confirmation message
             const confirmation = document.createElement('div');
             confirmation.style.cssText = `
                 position: fixed;
@@ -788,7 +764,6 @@
             confirmation.textContent = '✓ Data Saved';
             document.body.appendChild(confirmation);
             
-            // Remove after 2 seconds
             setTimeout(() => {
                 confirmation.style.opacity = '0';
                 confirmation.style.transform = 'translateY(-20px)';
@@ -814,40 +789,36 @@
                 }
 
                 const data = firebaseData.data;
-                const sectors = ['tourism', 'agriculture', 'energy'];
 
-                sectors.forEach(sector => {
-                    if (!data[sector]) return;
-
+                if (data.tourism) {
                     for (let i = 1; i <= 120; i++) {
-                        const rowData = data[sector][i];
+                        const rowData = data.tourism[i];
                         if (!rowData) continue;
 
                         // Fill form fields
-                        const salesLeadInput = document.getElementById(`${sector}-saleslead-${i}`);
-                        const industryInput = document.getElementById(`${sector}-industry-${i}`);
-                        const companyInput = document.getElementById(`${sector}-company-${i}`);
-                        const contactInput = document.getElementById(`${sector}-contact-${i}`);
-                        const titleInput = document.getElementById(`${sector}-title-${i}`);
-                        const emailInput = document.getElementById(`${sector}-email-${i}`);
-                        const phoneInput = document.getElementById(`${sector}-phone-${i}`);
-                        const notesInput = document.getElementById(`${sector}-notes-${i}`);
+                        const salesLeadInput = document.getElementById(`tourism-saleslead-${i}`);
+                        const industryInput = document.getElementById(`tourism-industry-${i}`);
+                        const companyInput = document.getElementById(`tourism-company-${i}`);
+                        const contactInput = document.getElementById(`tourism-contact-${i}`);
+                        const phoneInput = document.getElementById(`tourism-phone-${i}`);
+                        const emailInput = document.getElementById(`tourism-email-${i}`);
+                        const regionInput = document.getElementById(`tourism-region-${i}`);
+                        const notesInput = document.getElementById(`tourism-notes-${i}`);
 
                         if (salesLeadInput) salesLeadInput.value = rowData.salesLead || '';
                         if (industryInput) industryInput.value = rowData.industry || '';
                         if (companyInput) companyInput.value = rowData.company || '';
                         if (contactInput) contactInput.value = rowData.contact || '';
-                        if (titleInput) titleInput.value = rowData.title || '';
-                        if (emailInput) emailInput.value = rowData.email || '';
                         if (phoneInput) phoneInput.value = rowData.phone || '';
+                        if (emailInput) emailInput.value = rowData.email || '';
+                        if (regionInput) regionInput.value = rowData.region || '';
                         if (notesInput) notesInput.value = rowData.notes || '';
 
-                        // Set button states - use direct ID selectors
-                        const bootcampBtn = document.querySelector(`#${sector}-bootcamp-${i}`);
-                        const emailBtn = document.querySelector(`#${sector}-email-btn-${i}`);
-                        const callBtn = document.querySelector(`#${sector}-call-btn-${i}`);
-                        const visitBtn = document.querySelector(`#${sector}-visit-btn-${i}`);
-                        const outcomeSelect = document.querySelector(`#${sector}-outcome-${i}`);
+                        // Set button states
+                        const bootcampBtn = document.querySelector(`#tourism-bootcamp-${i}`);
+                        const emailBtn = document.querySelector(`#tourism-email-btn-${i}`);
+                        const callBtn = document.querySelector(`#tourism-call-btn-${i}`);
+                        const outcomeSelect = document.querySelector(`#tourism-outcome-${i}`);
 
                         if (bootcampBtn && rowData.bootcamp) {
                             bootcampBtn.textContent = rowData.bootcamp;
@@ -865,21 +836,19 @@
                             callBtn.style.background = rowData.callStatus === 'Called' ? '#27ae60' : '#f39c12';
                         }
 
-                        if (visitBtn && rowData.visitStatus) {
-                            visitBtn.textContent = rowData.visitStatus;
-                            visitBtn.style.background = rowData.visitStatus === 'Visited' ? '#27ae60' : '#e74c3c';
-                        }
-
                         if (outcomeSelect && rowData.outcome) {
                             outcomeSelect.value = rowData.outcome;
                             updateOutcomeColor(outcomeSelect);
                         }
                     }
-                });
+                }
 
                 updateDashboard();
                 alert(`Data loaded from Firebase successfully!\nLast updated: ${new Date(firebaseData.lastUpdated).toLocaleString()}`);
                 console.log('Data loaded from Firebase:', firebaseData.lastUpdated);
+                
+                // Update sales lead filter after loading data
+                updateSalesLeadFilter();
 
             }).catch((error) => {
                 alert('Failed to load from Firebase: ' + error.message);
@@ -889,21 +858,16 @@
 
         // Initialize the grids with empty rows for data entry
         function initializeGrids() {
-            const sectors = [
-                { id: 'tourism-grid', name: 'tourism' },
-                { id: 'agriculture-grid', name: 'agriculture' },
-                { id: 'energy-grid', name: 'energy' }
-            ];
-
-            sectors.forEach(sector => {
-                const grid = document.getElementById(sector.id);
-                for (let i = 1; i <= 100; i++) {
-                    grid.appendChild(createGridRow(i, sector.name));
-                }
-            });
+            const grid = document.getElementById('tourism-grid');
+            for (let i = 1; i <= 100; i++) {
+                grid.appendChild(createGridRow(i, 'tourism'));
+            }
             
             // Set up real-time dashboard updates
             setupDashboardUpdates();
+            
+            // Initial update of sales lead filter
+            updateSalesLeadFilter();
         }
 
         // Function to add more rows (21 additional rows when clicked)
@@ -942,6 +906,31 @@
             
             // Auto-save trigger on data changes
             setupAutoSaveTriggers();
+            
+            // Update sales lead filter when data changes
+            setupFilterUpdates();
+        }
+
+        function setupFilterUpdates() {
+            // Update filter options when sales lead data changes
+            document.addEventListener('input', function(e) {
+                if (e.target.id && e.target.id.includes('saleslead')) {
+                    // Debounce filter updates
+                    clearTimeout(window.filterUpdateTimeout);
+                    window.filterUpdateTimeout = setTimeout(updateSalesLeadFilter, 500);
+                }
+            });
+            
+            // Also update filter when data is pasted or changed in other ways
+            document.addEventListener('change', function(e) {
+                if (e.target.id && e.target.id.includes('saleslead')) {
+                    clearTimeout(window.filterUpdateTimeout);
+                    window.filterUpdateTimeout = setTimeout(updateSalesLeadFilter, 500);
+                }
+            });
+            
+            // Initial filter update
+            updateSalesLeadFilter();
         }
 
         function setupAutoSaveTriggers() {
@@ -972,89 +961,78 @@
         }
 
         function updateDashboard() {
-            const sectors = ['tourism', 'agriculture', 'energy'];
             let totalActive = 0;
-            let sectorActive = { tourism: 0, agriculture: 0, energy: 0 };
             let bootcampCounts = { 'Bootcamp': 0, 'Prince 2': 0, 'AI': 0, 'Microsoft': 0 };
-            let communicationCounts = { emails: 0, calls: 0, visits: 0 };
+            let communicationCounts = { emails: 0, calls: 0 };
             let outcomeCounts = { 
                 'Confirmed': 0, 'Rejected': 0, 'Interview': 0, 
                 'Waitlist': 0, 'Pending': 0, 'No Response': 0 
             };
             let completionCounts = { email: 0, phone: 0, notes: 0, complete: 0 };
 
-            sectors.forEach(sector => {
-                // Check both main grid (1-100) and extra grid (101-120)
-                for (let i = 1; i <= 120; i++) {
-                    const company = document.getElementById(`${sector}-company-${i}`);
-                    const contact = document.getElementById(`${sector}-contact-${i}`);
-                    const email = document.getElementById(`${sector}-email-${i}`);
-                    const phone = document.getElementById(`${sector}-phone-${i}`);
-                    const notes = document.getElementById(`${sector}-notes-${i}`);
+            // Check both main grid (1-100) and extra grid (101-120)
+            for (let i = 1; i <= 120; i++) {
+                const company = document.getElementById(`tourism-company-${i}`);
+                const contact = document.getElementById(`tourism-contact-${i}`);
+                const email = document.getElementById(`tourism-email-${i}`);
+                const phone = document.getElementById(`tourism-phone-${i}`);
+                const notes = document.getElementById(`tourism-notes-${i}`);
 
-                    // Check if this is an active contact (has company or contact name)
-                    if (company && contact && (company.value.trim() || contact.value.trim())) {
-                        totalActive++;
-                        sectorActive[sector]++;
+                // Check if this row is currently visible by checking the parent grid row
+                let isVisible = true;
+                if (company) {
+                    const parentRow = company.closest('.grid-row');
+                    isVisible = parentRow && parentRow.style.display !== 'none';
+                }
 
-                        // Count bootcamp types
-                        const bootcampBtn = document.getElementById(`${sector}-bootcamp-${i}`);
-                        if (bootcampBtn) {
-                            const bootcampType = bootcampBtn.textContent;
-                            if (bootcampCounts.hasOwnProperty(bootcampType)) {
-                                bootcampCounts[bootcampType]++;
-                            }
-                        }
+                // Check if this is an active contact (has company or contact name) AND is visible
+                if (company && contact && (company.value.trim() || contact.value.trim()) && isVisible) {
+                    totalActive++;
 
-                        // Count communications
-                        const emailBtn = document.getElementById(`${sector}-email-btn-${i}`);
-                        const callBtn = document.getElementById(`${sector}-call-btn-${i}`);
-                        const visitBtn = document.getElementById(`${sector}-visit-btn-${i}`);
-
-                        if (emailBtn && emailBtn.textContent === 'Sent') {
-                            communicationCounts.emails++;
-                        }
-                        if (callBtn && callBtn.textContent === 'Called') {
-                            communicationCounts.calls++;
-                        }
-                        if (visitBtn && visitBtn.textContent === 'Visited') {
-                            communicationCounts.visits++;
-                        }
-
-                        // Count outcomes
-                        const outcomeSelect = document.getElementById(`${sector}-outcome-${i}`);
-                        if (outcomeSelect && outcomeSelect.value) {
-                            outcomeCounts[outcomeSelect.value]++;
-                        }
-
-                        // Count completion stats
-                        if (email && email.value.trim()) completionCounts.email++;
-                        if (phone && phone.value.trim()) completionCounts.phone++;
-                        if (notes && notes.value.trim()) completionCounts.notes++;
-                        
-                        // Complete profile: has company/contact, email, and phone
-                        if ((company.value.trim() || contact.value.trim()) && 
-                            email && email.value.trim() && 
-                            phone && phone.value.trim()) {
-                            completionCounts.complete++;
+                    // Count bootcamp types
+                    const bootcampBtn = document.getElementById(`tourism-bootcamp-${i}`);
+                    if (bootcampBtn) {
+                        const bootcampType = bootcampBtn.textContent;
+                        if (bootcampCounts.hasOwnProperty(bootcampType)) {
+                            bootcampCounts[bootcampType]++;
                         }
                     }
+
+                    // Count communications
+                    const emailBtn = document.getElementById(`tourism-email-btn-${i}`);
+                    const callBtn = document.getElementById(`tourism-call-btn-${i}`);
+
+                    if (emailBtn && emailBtn.textContent === 'Sent') {
+                        communicationCounts.emails++;
+                    }
+                    if (callBtn && callBtn.textContent === 'Called') {
+                        communicationCounts.calls++;
+                    }
+
+                    // Count outcomes
+                    const outcomeSelect = document.getElementById(`tourism-outcome-${i}`);
+                    if (outcomeSelect && outcomeSelect.value) {
+                        outcomeCounts[outcomeSelect.value]++;
+                    }
+
+                    // Count completion stats
+                    if (email && email.value.trim()) completionCounts.email++;
+                    if (phone && phone.value.trim()) completionCounts.phone++;
+                    if (notes && notes.value.trim()) completionCounts.notes++;
+                    
+                    // Complete profile: has company/contact, email, and phone
+                    if ((company.value.trim() || contact.value.trim()) && 
+                        email && email.value.trim() && 
+                        phone && phone.value.trim()) {
+                        completionCounts.complete++;
+                    }
                 }
-            });
+            }
 
             // Update dashboard displays - with null checks
             const activeContactsEl = document.getElementById('active-contacts');
             if (activeContactsEl) activeContactsEl.textContent = totalActive;
             
-            const tourismActiveEl = document.getElementById('tourism-active');
-            if (tourismActiveEl) tourismActiveEl.textContent = sectorActive.tourism;
-            
-            const agricultureActiveEl = document.getElementById('agriculture-active');
-            if (agricultureActiveEl) agricultureActiveEl.textContent = sectorActive.agriculture;
-            
-            const energyActiveEl = document.getElementById('energy-active');
-            if (energyActiveEl) energyActiveEl.textContent = sectorActive.energy;
-
             const bootcampCountEl = document.getElementById('bootcamp-count');
             if (bootcampCountEl) bootcampCountEl.textContent = bootcampCounts['Bootcamp'];
             
@@ -1072,9 +1050,6 @@
             
             const callsMadeEl = document.getElementById('calls-made');
             if (callsMadeEl) callsMadeEl.textContent = communicationCounts.calls;
-            
-            const visitsMadeEl = document.getElementById('visits-made');
-            if (visitsMadeEl) visitsMadeEl.textContent = communicationCounts.visits;
 
             const confirmedCountEl = document.getElementById('confirmed-count');
             if (confirmedCountEl) confirmedCountEl.textContent = outcomeCounts['Confirmed'];
@@ -1118,12 +1093,9 @@
         function createGridRow(index, sectorName) {
             const rowContainer = document.createElement('div');
             
+            // Main data row
             const row = document.createElement('div');
             row.className = 'grid-row';
-            // Remove border for row 100
-            if (index === 100) {
-                row.classList.add('no-border');
-            }
             row.innerHTML = `
                 <div class="grid-cell">${index}</div>
                 <div class="grid-cell">
@@ -1139,14 +1111,27 @@
                     <input type="text" placeholder="Contact Person" id="${sectorName}-contact-${index}">
                 </div>
                 <div class="grid-cell">
-                    <input type="text" placeholder="Job Title" id="${sectorName}-title-${index}">
+                    <div class="contact-field">
+                        <input type="tel" placeholder="Phone Number" id="${sectorName}-phone-${index}">
+                        <button class="copy-btn" onclick="copyToClipboard('${sectorName}-phone-${index}', this)" title="Copy Phone">📞</button>
+                    </div>
                 </div>
                 <div class="grid-cell">
-                    <input type="email" placeholder="Email Address" id="${sectorName}-email-${index}">
+                    <div class="contact-field">
+                        <input type="email" placeholder="Email Address" id="${sectorName}-email-${index}">
+                        <button class="copy-btn" onclick="copyToClipboard('${sectorName}-email-${index}', this)" title="Copy Email">📧</button>
+                    </div>
                 </div>
                 <div class="grid-cell">
-                    <input type="tel" placeholder="Phone Number" id="${sectorName}-phone-${index}">
+                    <input type="text" placeholder="Region" id="${sectorName}-region-${index}">
                 </div>
+            `;
+
+            // Actions row (Bootcamp, Email, Call, Outcome)
+            const actionsRow = document.createElement('div');
+            actionsRow.className = 'actions-row';
+            actionsRow.innerHTML = `
+                <div></div>
                 <div class="grid-cell">
                     <button class="btn-small btn-bootcamp" onclick="toggleBootcamp(this)" id="${sectorName}-bootcamp-${index}">Bootcamp</button>
                 </div>
@@ -1167,13 +1152,16 @@
                         <option value="No Response">No Response</option>
                     </select>
                 </div>
+                <div></div>
             `;
 
+            // Notes row
             const notesRow = document.createElement('div');
             notesRow.className = 'notes-row';
             // Remove border for notes row of row 100
             if (index === 100) {
                 notesRow.classList.add('no-border');
+                actionsRow.classList.add('no-border');
             }
             notesRow.innerHTML = `
                 <div></div>
@@ -1184,21 +1172,22 @@
             `;
 
             rowContainer.appendChild(row);
+            rowContainer.appendChild(actionsRow);
             rowContainer.appendChild(notesRow);
             return rowContainer;
         }
 
         function updateOutcomeColor(selectElement) {
-            const row = selectElement.closest('.grid-row');
+            const actionsRow = selectElement.closest('.actions-row');
             const value = selectElement.value.toLowerCase().replace(' ', '-');
             
             // Remove all outcome classes
-            row.classList.remove('outcome-confirmed', 'outcome-rejected', 'outcome-interview', 
+            actionsRow.classList.remove('outcome-confirmed', 'outcome-rejected', 'outcome-interview', 
                               'outcome-waitlist', 'outcome-pending', 'outcome-no-response');
             
             // Add the appropriate class
             if (value) {
-                row.classList.add(`outcome-${value}`);
+                actionsRow.classList.add(`outcome-${value}`);
             }
             
             // Trigger dashboard update
@@ -1245,55 +1234,34 @@
             updateDashboard();
         }
 
-        function toggleVisit(button) {
-            if (button.textContent === 'Visit') {
-                button.textContent = 'Visited';
-                button.style.background = '#27ae60';
-            } else {
-                button.textContent = 'Visit';
-                button.style.background = '#e74c3c';
-            }
-            
-            // Trigger dashboard update
-            updateDashboard();
-        }
-
         function exportAllToCSV() {
-            let csvContent = 'Sector,#,Sales Lead,Industry,Company Name,Contact Person,Title,Email,Phone,Bootcamp,Email Status,Call Status,Outcome,Notes\n';
+            let csvContent = 'Sector,#,Sales Lead,Industry,Company Name,Contact Person,Phone,Email,Region,Bootcamp,Email Status,Call Status,Outcome,Notes\n';
             
-            const sectors = [
-                { name: 'Tourism & Hospitality', id: 'tourism' },
-                { name: 'Agriculture & Food Production', id: 'agriculture' },
-                { name: 'Renewable Energy', id: 'energy' }
-            ];
+            for (let i = 1; i <= 120; i++) {
+                const salesLead = document.getElementById(`tourism-saleslead-${i}`)?.value || '';
+                const industry = document.getElementById(`tourism-industry-${i}`)?.value || '';
+                const company = document.getElementById(`tourism-company-${i}`)?.value || '';
+                const contact = document.getElementById(`tourism-contact-${i}`)?.value || '';
+                const phone = document.getElementById(`tourism-phone-${i}`)?.value || '';
+                const email = document.getElementById(`tourism-email-${i}`)?.value || '';
+                const region = document.getElementById(`tourism-region-${i}`)?.value || '';
+                const notes = document.getElementById(`tourism-notes-${i}`)?.value || '';
+                
+                const bootcampBtn = document.getElementById(`tourism-bootcamp-${i}`);
+                const emailBtn = document.getElementById(`tourism-email-btn-${i}`);
+                const callBtn = document.getElementById(`tourism-call-btn-${i}`);
+                const outcomeSelect = document.getElementById(`tourism-outcome-${i}`);
+                
+                const bootcamp = bootcampBtn ? bootcampBtn.textContent : 'Bootcamp';
+                const emailStatus = emailBtn ? emailBtn.textContent : 'Send';
+                const callStatus = callBtn ? callBtn.textContent : 'Call';
+                const outcome = outcomeSelect ? outcomeSelect.value : '';
 
-            sectors.forEach(sector => {
-                for (let i = 1; i <= 120; i++) {
-                    const salesLead = document.getElementById(`${sector.id}-saleslead-${i}`)?.value || '';
-                    const industry = document.getElementById(`${sector.id}-industry-${i}`)?.value || '';
-                    const company = document.getElementById(`${sector.id}-company-${i}`)?.value || '';
-                    const contact = document.getElementById(`${sector.id}-contact-${i}`)?.value || '';
-                    const title = document.getElementById(`${sector.id}-title-${i}`)?.value || '';
-                    const email = document.getElementById(`${sector.id}-email-${i}`)?.value || '';
-                    const phone = document.getElementById(`${sector.id}-phone-${i}`)?.value || '';
-                    const notes = document.getElementById(`${sector.id}-notes-${i}`)?.value || '';
-                    
-                    const bootcampBtn = document.getElementById(`${sector.id}-bootcamp-${i}`);
-                    const emailBtn = document.getElementById(`${sector.id}-email-btn-${i}`);
-                    const callBtn = document.getElementById(`${sector.id}-call-btn-${i}`);
-                    const outcomeSelect = document.getElementById(`${sector.id}-outcome-${i}`);
-                    
-                    const bootcamp = bootcampBtn ? bootcampBtn.textContent : 'Bootcamp';
-                    const emailStatus = emailBtn ? emailBtn.textContent : 'Send';
-                    const callStatus = callBtn ? callBtn.textContent : 'Call';
-                    const outcome = outcomeSelect ? outcomeSelect.value : '';
-
-                    // Only export rows with data
-                    if (company || contact || email || phone) {
-                        csvContent += `"${sector.name}",${i},"${salesLead}","${industry}","${company}","${contact}","${title}","${email}","${phone}","${bootcamp}","${emailStatus}","${callStatus}","${outcome}","${notes}"\n`;
-                    }
+                // Only export rows with data
+                if (company || contact || email || phone) {
+                    csvContent += `"Tourism","${i}","${salesLead}","${industry}","${company}","${contact}","${phone}","${email}","${region}","${bootcamp}","${emailStatus}","${callStatus}","${outcome}","${notes}"\n`;
                 }
-            });
+            }
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -1331,8 +1299,8 @@
                 });
 
                 // Remove outcome color classes
-                const rows = document.querySelectorAll('.grid-row');
-                rows.forEach(row => {
+                const actionsRows = document.querySelectorAll('.actions-row');
+                actionsRows.forEach(row => {
                     row.classList.remove('outcome-confirmed', 'outcome-rejected', 'outcome-interview', 
                                       'outcome-waitlist', 'outcome-pending', 'outcome-no-response');
                 });
@@ -1352,90 +1320,112 @@
                 const csv = e.target.result;
                 const lines = csv.split('\n');
                 
-                // Skip header row
-                for (let i = 1; i < lines.length; i++) {
+                let rowNumber = 1;
+                
+                // Skip header row and process data
+                for (let i = 1; i < lines.length && rowNumber <= 120; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
                     
                     // Parse CSV line properly handling quoted values
                     const values = parseCSVLine(line);
                     
-                    if (values.length >= 14) {
-                        const sectorText = values[0].toLowerCase();
-                        const rowNumber = parseInt(values[1]);
-                        const salesLead = values[2];
-                        const industry = values[3];
-                        const company = values[4];
-                        const contact = values[5];
-                        const title = values[6];
-                        const email = values[7];
-                        const phone = values[8];
-                        const bootcamp = values[9];
-                        const emailStatus = values[10];
-                        const callStatus = values[11];
-                        const outcome = values[12];
-                        const notes = values[13] || '';
+                    if (values.length >= 15) {
+                        // Map CSV columns to form fields based on your CSV structure:
+                        // Sales Lead,Industry/Sector,Company Name,Phone,Contact Name,Contact Email,Contact Tel,Bootcamp,Region,Email sent,Spoke,Action/Comments,Chase/Follow up,Outcome,Notes
+                        const salesLead = values[0] || '';
+                        const industry = values[1] || '';
+                        const company = values[2] || '';
+                        const csvPhone = values[3] || '';
+                        const contact = values[4] || '';
+                        const email = values[5] || '';
+                        const contactTel = values[6] || '';
+                        const bootcamp = values[7] || 'Bootcamp';
+                        const region = values[8] || '';
+                        const emailSent = values[9] || '';
+                        const spoke = values[10] || '';
+                        const actionComments = values[11] || '';
+                        const chaseFollowUp = values[12] || '';
+                        const outcome = values[13] || '';
+                        const notes = values[14] || '';
+
+                        // Use the phone number from the most appropriate field
+                        const phone = contactTel || csvPhone;
+
+                        // Fill in the data
+                        const salesLeadInput = document.getElementById(`tourism-saleslead-${rowNumber}`);
+                        const industryInput = document.getElementById(`tourism-industry-${rowNumber}`);
+                        const companyInput = document.getElementById(`tourism-company-${rowNumber}`);
+                        const contactInput = document.getElementById(`tourism-contact-${rowNumber}`);
+                        const phoneInput = document.getElementById(`tourism-phone-${rowNumber}`);
+                        const emailInput = document.getElementById(`tourism-email-${rowNumber}`);
+                        const regionInput = document.getElementById(`tourism-region-${rowNumber}`);
+                        const notesInput = document.getElementById(`tourism-notes-${rowNumber}`);
                         
-                        let sectorName = '';
-                        if (sectorText.includes('tourism')) sectorName = 'tourism';
-                        else if (sectorText.includes('agriculture')) sectorName = 'agriculture';
-                        else if (sectorText.includes('energy')) sectorName = 'energy';
+                        if (salesLeadInput) salesLeadInput.value = salesLead;
+                        if (industryInput) industryInput.value = industry;
+                        if (companyInput) companyInput.value = company;
+                        if (contactInput) contactInput.value = contact;
+                        if (phoneInput) phoneInput.value = phone;
+                        if (emailInput) emailInput.value = email;
+                        if (regionInput) regionInput.value = region;
                         
-                        if (sectorName && rowNumber >= 1 && rowNumber <= 120) {
-                            // Fill in the data
-                            const salesLeadInput = document.getElementById(`${sectorName}-saleslead-${rowNumber}`);
-                            const industryInput = document.getElementById(`${sectorName}-industry-${rowNumber}`);
-                            const companyInput = document.getElementById(`${sectorName}-company-${rowNumber}`);
-                            const contactInput = document.getElementById(`${sectorName}-contact-${rowNumber}`);
-                            const titleInput = document.getElementById(`${sectorName}-title-${rowNumber}`);
-                            const emailInput = document.getElementById(`${sectorName}-email-${rowNumber}`);
-                            const phoneInput = document.getElementById(`${sectorName}-phone-${rowNumber}`);
-                            const notesInput = document.getElementById(`${sectorName}-notes-${rowNumber}`);
-                            
-                            if (salesLeadInput) salesLeadInput.value = salesLead;
-                            if (industryInput) industryInput.value = industry;
-                            if (companyInput) companyInput.value = company;
-                            if (contactInput) contactInput.value = contact;
-                            if (titleInput) titleInput.value = title;
-                            if (emailInput) emailInput.value = email;
-                            if (phoneInput) phoneInput.value = phone;
-                            if (notesInput) notesInput.value = notes;
-                            
-                            // Set button states
-                            const bootcampBtn = document.getElementById(`${sectorName}-bootcamp-${rowNumber}`);
-                            if (bootcampBtn && bootcamp) {
-                                bootcampBtn.textContent = bootcamp;
-                                const bootcampColors = { 'Bootcamp': '#8e44ad', 'Prince 2': '#e74c3c', 'AI': '#3498db', 'Microsoft': '#27ae60' };
-                                bootcampBtn.style.background = bootcampColors[bootcamp] || '#8e44ad';
-                            }
-                            
-                            const emailBtn = document.getElementById(`${sectorName}-email-btn-${rowNumber}`);
-                            if (emailBtn && emailStatus) {
-                                emailBtn.textContent = emailStatus;
-                                emailBtn.style.background = emailStatus === 'Sent' ? '#f39c12' : '#2ecc71';
-                            }
-                            
-                            const callBtn = document.getElementById(`${sectorName}-call-btn-${rowNumber}`);
-                            if (callBtn && callStatus) {
-                                callBtn.textContent = callStatus;
-                                callBtn.style.background = callStatus === 'Called' ? '#27ae60' : '#f39c12';
-                            }
-                            
-                            // Set outcome if provided
-                            if (outcome) {
-                                const outcomeSelect = document.getElementById(`${sectorName}-outcome-${rowNumber}`);
-                                if (outcomeSelect) {
-                                    outcomeSelect.value = outcome;
+                        // Combine notes from multiple fields
+                        let combinedNotes = '';
+                        if (notes) combinedNotes += notes;
+                        if (actionComments) combinedNotes += (combinedNotes ? ' | ' : '') + 'Action: ' + actionComments;
+                        if (chaseFollowUp) combinedNotes += (combinedNotes ? ' | ' : '') + 'Follow-up: ' + chaseFollowUp;
+                        
+                        if (notesInput) notesInput.value = combinedNotes;
+                        
+                        // Set button states
+                        const bootcampBtn = document.getElementById(`tourism-bootcamp-${rowNumber}`);
+                        if (bootcampBtn && bootcamp) {
+                            const bootcampOptions = ['Bootcamp', 'Prince 2', 'AI', 'Microsoft'];
+                            const bootcampText = bootcampOptions.includes(bootcamp) ? bootcamp : 'Bootcamp';
+                            bootcampBtn.textContent = bootcampText;
+                            const bootcampColors = { 'Bootcamp': '#8e44ad', 'Prince 2': '#e74c3c', 'AI': '#3498db', 'Microsoft': '#27ae60' };
+                            bootcampBtn.style.background = bootcampColors[bootcampText] || '#8e44ad';
+                        }
+                        
+                        const emailBtn = document.getElementById(`tourism-email-btn-${rowNumber}`);
+                        if (emailBtn && emailSent) {
+                            const emailStatus = (emailSent.toLowerCase() === 'yes' || emailSent.toLowerCase() === 'sent') ? 'Sent' : 'Send';
+                            emailBtn.textContent = emailStatus;
+                            emailBtn.style.background = emailStatus === 'Sent' ? '#f39c12' : '#2ecc71';
+                        }
+                        
+                        const callBtn = document.getElementById(`tourism-call-btn-${rowNumber}`);
+                        if (callBtn && spoke) {
+                            const callStatus = (spoke.toLowerCase() === 'yes' || spoke.toLowerCase() === 'called') ? 'Called' : 'Call';
+                            callBtn.textContent = callStatus;
+                            callBtn.style.background = callStatus === 'Called' ? '#27ae60' : '#f39c12';
+                        }
+                        
+                        // Set outcome if provided
+                        if (outcome) {
+                            const outcomeSelect = document.getElementById(`tourism-outcome-${rowNumber}`);
+                            if (outcomeSelect) {
+                                const outcomeOptions = ['Confirmed', 'Rejected', 'Interview', 'Waitlist', 'Pending', 'No Response'];
+                                const outcomeValue = outcomeOptions.find(opt => opt.toLowerCase() === outcome.toLowerCase()) || '';
+                                if (outcomeValue) {
+                                    outcomeSelect.value = outcomeValue;
                                     updateOutcomeColor(outcomeSelect);
                                 }
                             }
                         }
+                        
+                        rowNumber++;
                     }
                 }
                 
                 // Update dashboard after upload
                 updateDashboard();
-                alert('CSV uploaded successfully!');
+                
+                // Update filter options after CSV upload
+                setTimeout(updateSalesLeadFilter, 1000);
+                
+                alert(`CSV uploaded successfully! Imported ${rowNumber - 1} rows.`);
             };
             
             reader.readAsText(file);
@@ -1466,82 +1456,47 @@
             return result;
         }
 
-        function sortBySalesLead(sector) {
-            const gridId = `${sector}-grid`;
-            const grid = document.getElementById(gridId);
-            if (!grid) return;
-
-            // Get all rows (each row = 2 divs: data + notes)
-            const children = Array.from(grid.children);
-            const rowPairs = [];
-
-            for (let i = 0; i < children.length; i += 2) {
-                if (children[i + 1]) {
-                    const rowNum = Math.floor(i / 2) + 1;
-                    rowPairs.push({
-                        row: children[i],
-                        notes: children[i + 1],
-                        salesLead: document.getElementById(`${sector}-saleslead-${rowNum}`)?.value?.toLowerCase() || '',
-                        index: rowNum
-                    });
-                }
-            }
-
-            // Sort by salesLead field
-            rowPairs.sort((a, b) => a.salesLead.localeCompare(b.salesLead));
-
-            // Clear and re-append in sorted order
-            grid.innerHTML = '';
-            rowPairs.forEach(pair => {
-                grid.appendChild(pair.row);
-                grid.appendChild(pair.notes);
-            });
-
-            updateDashboard();
-        }
-
         // New comprehensive sort function
         function sortData() {
-            const sector = document.getElementById('sort-sector').value;
             const field = document.getElementById('sort-field').value;
             
-            if (!sector || !field) {
-                alert('Please select both a sector and a field to sort by.');
+            if (!field) {
+                alert('Please select a field to sort by.');
                 return;
             }
             
-            const gridId = `${sector}-grid`;
-            const grid = document.getElementById(gridId);
+            const grid = document.getElementById('tourism-grid');
             if (!grid) return;
 
-            // Get all rows (each row = 2 divs: data + notes)
+            // Get all rows (each row = 3 divs: data + actions + notes)
             const children = Array.from(grid.children);
-            const rowPairs = [];
+            const rowGroups = [];
 
-            for (let i = 0; i < children.length; i += 2) {
-                if (children[i + 1]) {
-                    const rowNum = Math.floor(i / 2) + 1;
+            for (let i = 0; i < children.length; i += 3) {
+                if (children[i + 1] && children[i + 2]) {
+                    const rowNum = Math.floor(i / 3) + 1;
                     const rowData = {
-                        row: children[i],
-                        notes: children[i + 1],
+                        dataRow: children[i],
+                        actionsRow: children[i + 1],
+                        notesRow: children[i + 2],
                         index: rowNum
                     };
                     
                     // Get the field value for sorting
                     if (field === 'outcome') {
-                        const outcomeSelect = document.getElementById(`${sector}-outcome-${rowNum}`);
+                        const outcomeSelect = document.getElementById(`tourism-outcome-${rowNum}`);
                         rowData.sortValue = outcomeSelect?.value || '';
                     } else {
-                        const fieldInput = document.getElementById(`${sector}-${field}-${rowNum}`);
+                        const fieldInput = document.getElementById(`tourism-${field}-${rowNum}`);
                         rowData.sortValue = fieldInput?.value?.toLowerCase() || '';
                     }
                     
-                    rowPairs.push(rowData);
+                    rowGroups.push(rowData);
                 }
             }
 
             // Sort by the selected field
-            rowPairs.sort((a, b) => {
+            rowGroups.sort((a, b) => {
                 // Put empty values at the end
                 if (!a.sortValue && b.sortValue) return 1;
                 if (a.sortValue && !b.sortValue) return -1;
@@ -1550,55 +1505,238 @@
 
             // Clear and re-append in sorted order
             grid.innerHTML = '';
-            rowPairs.forEach(pair => {
-                grid.appendChild(pair.row);
-                grid.appendChild(pair.notes);
+            rowGroups.forEach(group => {
+                grid.appendChild(group.dataRow);
+                grid.appendChild(group.actionsRow);
+                grid.appendChild(group.notesRow);
             });
 
             updateDashboard();
-            alert(`${sector.charAt(0).toUpperCase() + sector.slice(1)} sorted by ${field}`);
+            alert(`Tourism sorted by ${field}`);
         }
 
         // Reset to original order (by row number)
         function resetSort() {
-            const sector = document.getElementById('sort-sector').value;
-            
-            if (!sector) {
-                alert('Please select a sector to reset.');
-                return;
-            }
-            
-            const gridId = `${sector}-grid`;
-            const grid = document.getElementById(gridId);
+            const grid = document.getElementById('tourism-grid');
             if (!grid) return;
 
             // Get all rows
             const children = Array.from(grid.children);
-            const rowPairs = [];
+            const rowGroups = [];
 
-            for (let i = 0; i < children.length; i += 2) {
-                if (children[i + 1]) {
-                    const rowNum = Math.floor(i / 2) + 1;
-                    rowPairs.push({
-                        row: children[i],
-                        notes: children[i + 1],
+            for (let i = 0; i < children.length; i += 3) {
+                if (children[i + 1] && children[i + 2]) {
+                    const rowNum = Math.floor(i / 3) + 1;
+                    rowGroups.push({
+                        dataRow: children[i],
+                        actionsRow: children[i + 1],
+                        notesRow: children[i + 2],
                         index: rowNum
                     });
                 }
             }
 
             // Sort by index (original order)
-            rowPairs.sort((a, b) => a.index - b.index);
+            rowGroups.sort((a, b) => a.index - b.index);
 
             // Clear and re-append in original order
             grid.innerHTML = '';
-            rowPairs.forEach(pair => {
-                grid.appendChild(pair.row);
-                grid.appendChild(pair.notes);
+            rowGroups.forEach(group => {
+                grid.appendChild(group.dataRow);
+                grid.appendChild(group.actionsRow);
+                grid.appendChild(group.notesRow);
             });
 
+            // Show all rows after sorting
+            showAllRows();
             updateDashboard();
-            alert(`${sector.charAt(0).toUpperCase() + sector.slice(1)} reset to original order`);
+        }
+
+        // Sales Lead Filter Functions
+        function updateSalesLeadFilter() {
+            const filterSelect = document.getElementById('filter-saleslead');
+            if (!filterSelect) return;
+            
+            const salesLeads = new Set();
+            
+            // Collect all unique sales leads from both main and extra grids
+            for (let i = 1; i <= 120; i++) {
+                const salesLeadInput = document.getElementById(`tourism-saleslead-${i}`);
+                if (salesLeadInput && salesLeadInput.value.trim()) {
+                    salesLeads.add(salesLeadInput.value.trim());
+                }
+            }
+            
+            // Store current selection to preserve it if possible
+            const currentSelection = filterSelect.value;
+            
+            // Clear existing options except "Show All"
+            filterSelect.innerHTML = '<option value="">Show All Sales Leads</option>';
+            
+            // Add unique sales leads to filter
+            const sortedLeads = Array.from(salesLeads).sort();
+            sortedLeads.forEach(salesLead => {
+                const option = document.createElement('option');
+                option.value = salesLead;
+                option.textContent = salesLead;
+                filterSelect.appendChild(option);
+            });
+            
+            // Restore previous selection if it still exists
+            if (currentSelection && sortedLeads.includes(currentSelection)) {
+                filterSelect.value = currentSelection;
+            }
+            
+            console.log('Sales lead filter updated with:', sortedLeads);
+        }
+
+        function applyFilter() {
+            const selectedSalesLead = document.getElementById('filter-saleslead').value;
+            const filterIndicator = document.getElementById('filter-indicator');
+            
+            if (!selectedSalesLead) {
+                // Show all rows if no filter selected
+                showAllRows();
+                filterIndicator.textContent = '';
+                return;
+            }
+            
+            // Update filter indicator
+            filterIndicator.textContent = `Showing: ${selectedSalesLead}`;
+            
+            console.log(`Filtering for sales lead: "${selectedSalesLead}"`);
+            
+            const grid = document.getElementById('tourism-grid');
+            const extraGrid = document.getElementById('tourism-extra-grid');
+            
+            // Filter main grid
+            filterGridRows(grid, selectedSalesLead);
+            
+            // Filter extra grid if visible
+            if (extraGrid.style.display !== 'none') {
+                filterGridRows(extraGrid, selectedSalesLead);
+            }
+            
+            // Force dashboard update after filtering
+            setTimeout(() => {
+                updateDashboard();
+                console.log('Dashboard updated after filtering');
+            }, 100);
+        }
+
+        function filterGridRows(grid, selectedSalesLead) {
+            const children = Array.from(grid.children);
+            
+            for (let i = 0; i < children.length; i += 3) {
+                const dataRow = children[i];
+                const actionsRow = children[i + 1];
+                const notesRow = children[i + 2];
+                
+                if (dataRow && actionsRow && notesRow) {
+                    // Find the sales lead input in this row
+                    const salesLeadInput = dataRow.querySelector('input[id*="saleslead"]');
+                    const salesLeadValue = salesLeadInput ? salesLeadInput.value.trim() : '';
+                    
+                    // Debug logging
+                    if (salesLeadValue) {
+                        console.log(`Row ${Math.floor(i/3) + 1}: "${salesLeadValue}" === "${selectedSalesLead}"? ${salesLeadValue === selectedSalesLead}`);
+                    }
+                    
+                    // EXACT match only - not partial match
+                    if (salesLeadValue === selectedSalesLead) {
+                        dataRow.style.display = 'grid';
+                        actionsRow.style.display = 'grid';
+                        notesRow.style.display = 'grid';
+                    } else {
+                        dataRow.style.display = 'none';
+                        actionsRow.style.display = 'none';
+                        notesRow.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        function showAllRows() {
+            const grid = document.getElementById('tourism-grid');
+            const extraGrid = document.getElementById('tourism-extra-grid');
+            
+            // Show all rows in main grid
+            showAllGridRows(grid);
+            
+            // Show all rows in extra grid if visible
+            if (extraGrid.style.display !== 'none') {
+                showAllGridRows(extraGrid);
+            }
+            
+            updateDashboard();
+        }
+
+        function showAllGridRows(grid) {
+            const children = Array.from(grid.children);
+            
+            children.forEach(child => {
+                child.style.display = 'grid';
+            });
+        }
+
+        function resetView() {
+            // Reset filter dropdown
+            document.getElementById('filter-saleslead').value = '';
+            
+            // Clear filter indicator
+            document.getElementById('filter-indicator').textContent = '';
+            
+            // Show all rows
+            showAllRows();
+            
+            // Reset sort order
+            resetSort();
+            
+            alert('View reset - showing all rows in original order');
+        }
+
+        // Copy to clipboard function
+        function copyToClipboard(inputId, buttonElement) {
+            const input = document.getElementById(inputId);
+            if (!input || !input.value.trim()) {
+                // Flash red if empty
+                buttonElement.style.background = '#e74c3c';
+                setTimeout(() => {
+                    buttonElement.style.background = '#95a5a6';
+                }, 300);
+                return;
+            }
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(input.value).then(() => {
+                // Success feedback
+                const originalText = buttonElement.textContent;
+                const originalBg = buttonElement.style.background;
+                
+                buttonElement.textContent = '✓';
+                buttonElement.classList.add('copied');
+                
+                setTimeout(() => {
+                    buttonElement.textContent = originalText;
+                    buttonElement.classList.remove('copied');
+                    buttonElement.style.background = originalBg;
+                }, 1000);
+            }).catch(err => {
+                // Fallback for older browsers
+                input.select();
+                input.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                
+                // Success feedback
+                const originalText = buttonElement.textContent;
+                buttonElement.textContent = '✓';
+                buttonElement.classList.add('copied');
+                
+                setTimeout(() => {
+                    buttonElement.textContent = originalText;
+                    buttonElement.classList.remove('copied');
+                }, 1000);
+            });
         }
 
         // Initialize the page when it loads
