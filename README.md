@@ -1,5 +1,5 @@
+git add docs/
 [BIT Group Data-Protection-Policy-v.1.2.pdf](https://github.com/user-attachments/files/20851560/BIT.Group.Data-Protection-Policy-v.1.2.pdf)
-
 [BYOD-Policy-v.1.2.docx](https://github.com/user-attachments/files/20851585/BYOD-Policy-v.1.2.docx)
 [BYOD-Policy-v.1.2 (1).docx](https://github.com/user-attachments/files/20851584/BYOD-Policy-v.1.2.1.docx)
 [BIT-Group-Incident-Response-Policy-v.1.2.pdf](https://github.com/user-attachments/files/20851583/BIT-Group-Incident-Response-Policy-v.1.2.pdf)
@@ -25,3 +25,5 @@
 [ClassifiedPricing (1).pdf](https://github.com/user-attachments/files/20851563/ClassifiedPricing.1.pdf)
 [CE-Plus-Cert-2025.pdf](https://github.com/user-attachments/files/20851562/CE-Plus-Cert-2025.pdf)
 [CDP Unique Identifier.pdf](https://github.com/user-attachments/files/20851561/CDP.Unique.Identifier.pdf)
+git commit -m "Add docs"
+git push
