@@ -1,0 +1,863 @@
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Star, Download, Archive, Trash2, Calendar, Users, Filter, Grid, List, ExternalLink, Play, Settings, Edit } from 'lucide-react';
+
+const AppStore = () => {
+  const [apps, setApps] = useState([]);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [viewMode, setViewMode] = useState('grid');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingApp, setEditingApp] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [newApp, setNewApp] = useState({
+    url: '',
+    name: '',
+    description: '',
+    downloadUrl: '',
+    launchUrl: '',
+    category: 'Utility',
+    version: '1.0.0',
+    iconType: 'auto',
+    customImage: null
+  });
+
+  const categories = ['All', 'Business', 'Productivity', 'Utility', 'Entertainment', 'Education', 'Health', 'Finance'];
+
+  const generateAppIcon = (category, name, description, customIconType = null) => {
+    // Create more sophisticated icons based on description and category
+    let iconContent = '🔧'; // default
+    let bgGradient = 'linear-gradient(135deg, #14b8a6 0%, #0891b2 100%)'; // turquoise default
+    
+    // Use custom icon type if specified, otherwise analyze description
+    const iconType = customIconType || 'auto';
+    const desc = (description + ' ' + name).toLowerCase();
+    
+    if (iconType === 'contact' || (iconType === 'auto' && (desc.includes('contact') || desc.includes('crm') || desc.includes('business')))) {
+      iconContent = (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-lg">👥</div>
+          <div className="text-xs font-bold">CRM</div>
+        </div>
+      );
+      bgGradient = 'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)';
+    } else if (iconType === 'finance' || (iconType === 'auto' && (desc.includes('finance') || desc.includes('money') || desc.includes('bank') || desc.includes('payment')))) {
+      iconContent = (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-lg">💰</div>
+          <div className="text-xs font-bold">$$</div>
+        </div>
+      );
+      bgGradient = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+    } else if (iconType === 'game' || (iconType === 'auto' && (desc.includes('game') || desc.includes('play') || desc.includes('entertainment') || desc.includes('fun')))) {
+      iconContent = (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-lg">🎮</div>
+          <div className="text-xs font-bold">PLAY</div>
+        </div>
+      );
+      bgGradient = 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)';
+    } else if (iconType === 'health' || (iconType === 'auto' && (desc.includes('health') || desc.includes('medical') || desc.includes('doctor') || desc.includes('fitness')))) {
+      iconContent = (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-lg">❤️</div>
+          <div className="text-xs font-bold">HEALTH</div>
+        </div>
+      );
+      bgGradient = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+    } else if (iconType === 'education' || (iconType === 'auto' && (desc.includes('education') || desc.includes('learn') || desc.includes('school') || desc.includes('study')))) {
+      iconContent = (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-lg">📚</div>
+          <div className="text-xs font-bold">LEARN</div>
+        </div>
+      );
+      bgGradient = 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)';
+    } else if (iconType === 'productivity' || (iconType === 'auto' && (desc.includes('productivity') || desc.includes('task') || desc.includes('organize') || desc.includes('manage')))) {
+      iconContent = (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-lg">📊</div>
+          <div className="text-xs font-bold">PROD</div>
+        </div>
+      );
+      bgGradient = 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)';
+    } else if (iconType === 'tracker' || (iconType === 'auto' && (desc.includes('tracker') || desc.includes('track') || desc.includes('monitor')))) {
+      iconContent = (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-lg">📍</div>
+          <div className="text-xs font-bold">TRACK</div>
+        </div>
+      );
+      bgGradient = 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)';
+    } else if (iconType === 'utility') {
+      iconContent = (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-lg">🔧</div>
+          <div className="text-xs font-bold">UTIL</div>
+        </div>
+      );
+      bgGradient = 'linear-gradient(135deg, #14b8a6 0%, #0891b2 100%)';
+    }
+
+    return (
+      <div 
+        className="w-24 h-24 rounded-2xl flex items-center justify-center text-white relative overflow-hidden transform hover:scale-105 transition-all duration-300 hover:rotate-3 shadow-lg"
+        style={{ 
+          background: bgGradient,
+          boxShadow: '0 10px 40px rgba(20, 184, 166, 0.3)'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-tl from-black/10 to-transparent"></div>
+        <div className="relative z-10 drop-shadow-lg text-center font-bold">
+          {typeof iconContent === 'string' ? (
+            <div className="text-2xl">{iconContent}</div>
+          ) : (
+            iconContent
+          )}
+        </div>
+        <div className="absolute bottom-1 right-1 w-3 h-3 bg-white/20 rounded-full"></div>
+      </div>
+    );
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNewApp(prev => ({ ...prev, customImage: event.target.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const analyzeUrl = async (url) => {
+    setIsAnalyzing(true);
+    
+    // Simulate URL analysis
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Mock analysis based on URL patterns
+    let analyzedData = {
+      name: 'Unknown App',
+      description: 'Application detected from URL',
+      category: 'Utility',
+      version: '1.0.0'
+    };
+
+    if (url.includes('business') || url.includes('crm') || url.includes('contact')) {
+      analyzedData = {
+        name: url.split('/').pop() || 'Business Contact Manager',
+        description: 'Advanced business contact management and CRM system for tracking clients, leads, and professional networking',
+        category: 'Business',
+        version: '1.0.0'
+      };
+    } else if (url.includes('game') || url.includes('play')) {
+      analyzedData = {
+        name: url.split('/').pop() || 'Interactive Game',
+        description: 'Engaging interactive entertainment application with dynamic gameplay features',
+        category: 'Entertainment',
+        version: '1.0.0'
+      };
+    } else if (url.includes('finance') || url.includes('money') || url.includes('bank')) {
+      analyzedData = {
+        name: url.split('/').pop() || 'Finance Tracker',
+        description: 'Comprehensive financial management and expense tracking application',
+        category: 'Finance',
+        version: '1.0.0'
+      };
+    }
+
+    setNewApp(prev => ({
+      ...prev,
+      ...analyzedData,
+      downloadUrl: url,
+      launchUrl: url
+    }));
+    
+    setIsAnalyzing(false);
+  };
+
+  const filteredApps = apps.filter(app => {
+    const matchesSearch = app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         app.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         app.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = selectedCategory === 'All' || app.category === selectedCategory;
+    const matchesArchiveFilter = showArchived ? app.isArchived : !app.isArchived;
+    
+    return matchesSearch && matchesCategory && matchesArchiveFilter;
+  });
+
+  const handleAddApp = () => {
+    if (newApp.url && (newApp.name || showAdvanced)) {
+      const app = {
+        ...newApp,
+        id: Date.now(),
+        rating: 0,
+        downloads: 0,
+        lastUpdated: new Date().toISOString().split('T')[0],
+        developer: "Your Name",
+        size: "Unknown",
+        screenshots: [],
+        isFavorite: false,
+        isArchived: false,
+        tags: newApp.category ? [newApp.category] : [],
+        iconType: newApp.iconType || 'auto',
+        customImage: newApp.customImage
+      };
+      
+      setApps([...apps, app]);
+      setNewApp({ url: '', name: '', description: '', downloadUrl: '', launchUrl: '', category: 'Utility', version: '1.0.0', iconType: 'auto', customImage: null });
+      setShowAddModal(false);
+      setShowAdvanced(false);
+    }
+  };
+
+  const handleEditApp = (app) => {
+    setEditingApp(app);
+    setNewApp({
+      url: app.launchUrl,
+      name: app.name,
+      description: app.description,
+      downloadUrl: app.downloadUrl,
+      launchUrl: app.launchUrl,
+      category: app.category,
+      version: app.version,
+      iconType: app.iconType || 'auto',
+      customImage: app.customImage || null
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateApp = () => {
+    if (editingApp && newApp.name) {
+      const updatedApp = {
+        ...editingApp,
+        ...newApp,
+        lastUpdated: new Date().toISOString().split('T')[0],
+        tags: newApp.category ? [newApp.category] : [],
+        iconType: newApp.iconType || 'auto',
+        customImage: newApp.customImage
+      };
+      
+      setApps(apps.map(app => app.id === editingApp.id ? updatedApp : app));
+      setNewApp({ url: '', name: '', description: '', downloadUrl: '', launchUrl: '', category: 'Utility', version: '1.0.0', iconType: 'auto', customImage: null });
+      setShowEditModal(false);
+      setEditingApp(null);
+    }
+  };
+
+  const toggleFavorite = (id) => {
+    setApps(apps.map(app => 
+      app.id === id ? { ...app, isFavorite: !app.isFavorite } : app
+    ));
+  };
+
+  const toggleArchive = (id) => {
+    setApps(apps.map(app => 
+      app.id === id ? { ...app, isArchived: !app.isArchived } : app
+    ));
+  };
+
+  const deleteApp = (id) => {
+    if (confirm('Are you sure you want to permanently delete this app?')) {
+      setApps(apps.filter(app => app.id !== id));
+    }
+  };
+
+  const handleLaunch = (url) => {
+    if (url && url !== '#') {
+      window.open(url, '_blank');
+    } else {
+      alert('Launch URL not available for this app');
+    }
+  };
+
+  const AppCard = ({ app }) => (
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+      <div className="p-6">
+        <div className="flex gap-4">
+          {/* App Icon */}
+          <div className="flex-shrink-0">
+            {generateAppIcon(app.category, app.name, app.description, app.iconType, app.customImage)}
+          </div>
+          
+          {/* App Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 truncate">{app.name}</h3>
+                <span className="inline-block px-3 py-1 text-xs font-bold bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-full">
+                  {app.category}
+                </span>
+              </div>
+              <button
+                onClick={() => toggleFavorite(app.id)}
+                className={`p-1 rounded-full ${app.isFavorite ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-500 transition-colors`}
+              >
+                <Star size={16} fill={app.isFavorite ? 'currentColor' : 'none'} />
+              </button>
+            </div>
+            
+            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{app.description}</p>
+            
+            <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+              <div className="flex items-center gap-1">
+                <Star size={12} className="text-yellow-500" />
+                <span>{app.rating}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Download size={12} />
+                <span>{app.downloads.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar size={12} />
+                <span>{app.lastUpdated}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleLaunch(app.launchUrl)}
+            className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+          >
+            <Play size={12} />
+            Launch
+          </button>
+          <button
+            onClick={() => handleEditApp(app)}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-3 py-2 rounded-xl text-sm font-bold hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-1 shadow-md hover:shadow-lg"
+          >
+            <Edit size={12} />
+            Edit
+          </button>
+          <div className="flex-1"></div>
+          <button
+            onClick={() => toggleArchive(app.id)}
+            className="p-2 text-gray-500 hover:text-teal-600 transition-colors rounded-lg hover:bg-teal-50"
+            title={app.isArchived ? "Restore" : "Archive"}
+          >
+            <Archive size={16} />
+          </button>
+          <button
+            onClick={() => deleteApp(app.id)}
+            className="p-2 text-red-500 hover:text-red-700 transition-colors rounded-lg hover:bg-red-50"
+            title="Delete"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const AppListItem = ({ app }) => (
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 p-6">
+      <div className="flex items-center gap-6">
+        {/* App Icon */}
+        <div className="flex-shrink-0">
+          {generateAppIcon(app.category, app.name, app.description, app.iconType, app.customImage)}
+        </div>  
+        {/* App Info */}
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <h3 className="text-xl font-bold text-gray-900">{app.name}</h3>
+            <span className="px-3 py-1 text-xs font-bold bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-full">
+              {app.category}
+            </span>
+            <button
+              onClick={() => toggleFavorite(app.id)}
+              className={`p-1 rounded-full ${app.isFavorite ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-500 transition-colors`}
+            >
+              <Star size={14} fill={app.isFavorite ? 'currentColor' : 'none'} />
+            </button>
+          </div>
+          <p className="text-gray-600 text-sm mb-2">{app.description}</p>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <span>★ {app.rating}</span>
+            <span>{app.downloads.toLocaleString()} downloads</span>
+            <span>Updated {app.lastUpdated}</span>
+          </div>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 ml-4">
+          <button
+            onClick={() => handleLaunch(app.launchUrl)}
+            className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg"
+          >
+            <Play size={12} />
+            Launch
+          </button>
+          <button
+            onClick={() => handleEditApp(app)}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-3 py-2 rounded-xl text-sm font-bold hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-1 shadow-md hover:shadow-lg"
+          >
+            <Edit size={12} />
+            Edit
+          </button>
+          <button
+            onClick={() => toggleArchive(app.id)}
+            className="p-2 text-gray-500 hover:text-teal-600 transition-colors rounded-lg hover:bg-teal-50"
+            title={app.isArchived ? "Restore" : "Archive"}
+          >
+            <Archive size={16} />
+          </button>
+          <button
+            onClick={() => deleteApp(app.id)}
+            className="p-2 text-red-500 hover:text-red-700 transition-colors rounded-lg hover:bg-red-50"
+            title="Delete"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-teal-600 via-cyan-600 to-emerald-600 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h1 className="text-xl font-bold text-white">My App Store</h1>
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-white text-teal-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 shadow-md text-sm"
+            >
+              <Plus size={14} />
+              Add App
+            </button>
+          </div>
+          
+          {/* Search and Filters */}
+          <div className="flex flex-col lg:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search size={14} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search apps..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 border-0 rounded-lg focus:ring-2 focus:ring-teal-200 focus:outline-none shadow-md text-sm"
+              />
+            </div>
+            
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-3 py-2 border-0 rounded-lg focus:ring-2 focus:ring-teal-200 focus:outline-none shadow-md font-medium text-sm"
+            >
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowArchived(!showArchived)}
+                className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-md text-sm ${
+                  showArchived 
+                    ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {showArchived ? 'Hide Archived' : 'Show Archived'}
+              </button>
+              
+              <div className="flex bg-white rounded-lg p-1 shadow-md">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded transition-all duration-200 ${viewMode === 'grid' ? 'bg-teal-500 text-white shadow-sm' : 'text-gray-500 hover:text-teal-600'}`}
+                >
+                  <Grid size={14} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded transition-all duration-200 ${viewMode === 'list' ? 'bg-teal-500 text-white shadow-sm' : 'text-gray-500 hover:text-teal-600'}`}
+                >
+                  <List size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Apps Grid/List */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mb-6 text-lg text-gray-700 font-medium">
+          {filteredApps.length} {filteredApps.length === 1 ? 'app' : 'apps'} found
+          {showArchived && ' (including archived)'}
+        </div>
+        
+        <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/60">
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {filteredApps.map(app => (
+                <AppCard key={app.id} app={app} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {filteredApps.map(app => (
+                <AppListItem key={app.id} app={app} />
+              ))}
+            </div>
+          )}
+          
+          {filteredApps.length === 0 && (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4">📱</div>
+              <p className="text-gray-500 text-xl mb-4">No apps found matching your criteria</p>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-8 py-4 rounded-2xl font-bold hover:from-teal-600 hover:to-cyan-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Add your first app
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Add App Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className={`bg-white rounded-3xl w-full ${showAdvanced ? 'max-w-4xl max-h-[85vh]' : 'max-w-md max-h-[70vh]'} flex flex-col shadow-2xl transition-all duration-300`}>
+            <div className="p-6 border-b border-gray-100 flex-shrink-0">
+              <h2 className="text-2xl font-bold text-gray-900">Add New App</h2>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className={showAdvanced ? "grid grid-cols-2 gap-8" : "space-y-6"}>
+                {/* Left Column or Single Column */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">App URL</label>
+                    <input
+                      type="url"
+                      value={newApp.url}
+                      onChange={(e) => setNewApp({...newApp, url: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                      placeholder="https://example.com/your-app"
+                    />
+                    <div className="flex gap-3 mt-3">
+                      <button
+                        onClick={() => analyzeUrl(newApp.url)}
+                        disabled={!newApp.url || isAnalyzing}
+                        className="px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl text-sm font-bold hover:from-teal-600 hover:to-cyan-700 disabled:opacity-50 transition-all duration-200"
+                      >
+                        {isAnalyzing ? 'Analyzing...' : 'Auto-detect Info'}
+                      </button>
+                      <button
+                        onClick={() => setShowAdvanced(!showAdvanced)}
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-200 flex items-center gap-2 transition-all duration-200"
+                      >
+                        <Settings size={14} />
+                        Advanced
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {showAdvanced && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">App Name</label>
+                        <input
+                          type="text"
+                          value={newApp.name}
+                          onChange={(e) => setNewApp({...newApp, name: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                          placeholder="Enter app name"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                        <textarea
+                          value={newApp.description}
+                          onChange={(e) => setNewApp({...newApp, description: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                          rows="4"
+                          placeholder="Enter app description"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                          <select
+                            value={newApp.category}
+                            onChange={(e) => setNewApp({...newApp, category: e.target.value})}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                          >
+                            {categories.slice(1).map(category => (
+                              <option key={category} value={category}>{category}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-2">Version</label>
+                          <input
+                            type="text"
+                            value={newApp.version}
+                            onChange={(e) => setNewApp({...newApp, version: e.target.value})}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                            placeholder="1.0.0"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {newApp.name && (
+                    <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200">
+                      <p className="text-sm text-emerald-700 font-bold">
+                        ✓ App detected: <span className="font-bold">{newApp.name}</span>
+                      </p>
+                      <p className="text-xs text-emerald-600 mt-1">{newApp.description}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column - Only shows when advanced is enabled */}
+                {showAdvanced && (
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-3">App Icon</label>
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="flex-shrink-0">
+                          {generateAppIcon(newApp.category, newApp.name, newApp.description, newApp.iconType, newApp.customImage)}
+                        </div>
+                        <div className="w-full space-y-3">
+                          <select
+                            value={newApp.iconType}
+                            onChange={(e) => setNewApp({...newApp, iconType: e.target.value})}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                          >
+                            <option value="auto">Auto-detect from description</option>
+                            <option value="contact">👥 Contact/CRM</option>
+                            <option value="finance">💰 Finance</option>
+                            <option value="game">🎮 Game/Entertainment</option>
+                            <option value="health">❤️ Health/Medical</option>
+                            <option value="education">📚 Education/Learning</option>
+                            <option value="productivity">📊 Productivity</option>
+                            <option value="tracker">📍 Tracker/Monitor</option>
+                            <option value="utility">🔧 Utility/Tool</option>
+                          </select>
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl px-4 py-8 text-center hover:border-teal-400 transition-colors">
+                              <p className="text-sm text-gray-600 font-medium">Upload Custom Image</p>
+                              <p className="text-xs text-gray-400">Click to browse files</p>
+                            </div>
+                          </div>
+                          {newApp.customImage && (
+                            <button
+                              onClick={() => setNewApp(prev => ({ ...prev, customImage: null }))}
+                              className="text-sm text-red-600 hover:text-red-700 font-medium w-full text-center"
+                            >
+                              Remove custom image
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 flex-shrink-0">
+              <div className="flex gap-4">
+                <button
+                  onClick={handleAddApp}
+                  disabled={!newApp.url || (!newApp.name && !showAdvanced)}
+                  className="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-teal-600 hover:to-cyan-700 transition-all duration-200 disabled:opacity-50 shadow-lg"
+                >
+                  Add App
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setShowAdvanced(false);
+                    setNewApp({ url: '', name: '', description: '', downloadUrl: '', launchUrl: '', category: 'Utility', version: '1.0.0', iconType: 'auto', customImage: null });
+                  }}
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-2xl font-bold hover:bg-gray-200 transition-all duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit App Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl">
+            <div className="p-6 border-b border-gray-100 flex-shrink-0">
+              <h2 className="text-2xl font-bold text-gray-900">Edit App</h2>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-2 gap-8">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">App Name</label>
+                    <input
+                      type="text"
+                      value={newApp.name}
+                      onChange={(e) => setNewApp({...newApp, name: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                      placeholder="Enter app name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                    <textarea
+                      value={newApp.description}
+                      onChange={(e) => setNewApp({...newApp, description: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                      rows="4"
+                      placeholder="Enter app description"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">App URL</label>
+                    <input
+                      type="url"
+                      value={newApp.url}
+                      onChange={(e) => setNewApp({...newApp, url: e.target.value, launchUrl: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                      placeholder="https://example.com/your-app"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                      <select
+                        value={newApp.category}
+                        onChange={(e) => setNewApp({...newApp, category: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                      >
+                        {categories.slice(1).map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Version</label>
+                      <input
+                        type="text"
+                        value={newApp.version}
+                        onChange={(e) => setNewApp({...newApp, version: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                        placeholder="1.0.0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column - Icon Section */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-3">App Icon</label>
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="flex-shrink-0">
+                        {generateAppIcon(newApp.category, newApp.name, newApp.description, newApp.iconType, newApp.customImage)}
+                      </div>
+                      <div className="w-full space-y-3">
+                        <select
+                          value={newApp.iconType}
+                          onChange={(e) => setNewApp({...newApp, iconType: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none"
+                        >
+                          <option value="auto">Auto-detect from description</option>
+                          <option value="contact">👥 Contact/CRM</option>
+                          <option value="finance">💰 Finance</option>
+                          <option value="game">🎮 Game/Entertainment</option>
+                          <option value="health">❤️ Health/Medical</option>
+                          <option value="education">📚 Education/Learning</option>
+                          <option value="productivity">📊 Productivity</option>
+                          <option value="tracker">📍 Tracker/Monitor</option>
+                          <option value="utility">🔧 Utility/Tool</option>
+                        </select>
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl px-4 py-8 text-center hover:border-teal-400 transition-colors">
+                            <p className="text-sm text-gray-600 font-medium">Upload Custom Image</p>
+                            <p className="text-xs text-gray-400">Click to browse files</p>
+                          </div>
+                        </div>
+                        {newApp.customImage && (
+                          <button
+                            onClick={() => setNewApp(prev => ({ ...prev, customImage: null }))}
+                            className="text-sm text-red-600 hover:text-red-700 font-medium w-full text-center"
+                          >
+                            Remove custom image
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 flex-shrink-0">
+              <div className="flex gap-4">
+                <button
+                  onClick={handleUpdateApp}
+                  className="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-teal-600 hover:to-cyan-700 transition-all duration-200 shadow-lg"
+                >
+                  Update App
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingApp(null);
+                    setNewApp({ url: '', name: '', description: '', downloadUrl: '', launchUrl: '', category: 'Utility', version: '1.0.0', iconType: 'auto', customImage: null });
+                  }}
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-2xl font-bold hover:bg-gray-200 transition-all duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AppStore;
