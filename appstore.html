@@ -3,164 +3,709 @@
 <head>
     <title>Personal App Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .app-icon { transition: all 0.3s ease; }
+        .app-icon:hover { transform: scale(1.05) rotate(3deg); }
+        .app-card { transition: all 0.3s ease; }
+        .app-card:hover { transform: translateY(-4px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .backdrop-blur-sm { backdrop-filter: blur(4px); }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-teal-50 to-emerald-50 min-h-screen">
-    <div class="bg-teal-600 text-white p-4">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold">My App Store</h1>
-            <button onclick="showModal()" class="bg-white text-teal-600 px-4 py-2 rounded-lg font-medium">Add App</button>
+<body class="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50">
+    
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-teal-600 via-cyan-600 to-emerald-600 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <h1 class="text-xl font-bold text-white">My App Store</h1>
+                </div>
+                <button onclick="showAddModal()" class="bg-white text-teal-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 shadow-md text-sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="12 5v14"></path>
+                        <path d="5 12h14"></path>
+                    </svg>
+                    Add App
+                </button>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row gap-2">
+                <div class="relative flex-1">
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="21 21l-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Search apps..." oninput="handleSearch()" class="w-full pl-9 pr-3 py-2 border-0 rounded-lg focus:ring-2 focus:ring-teal-200 focus:outline-none shadow-md text-sm">
+                </div>
+                
+                <select id="categorySelect" onchange="handleCategoryChange()" class="px-3 py-2 border-0 rounded-lg focus:ring-2 focus:ring-teal-200 focus:outline-none shadow-md font-medium text-sm">
+                    <option value="All">All</option>
+                    <option value="Business">Business</option>
+                    <option value="Productivity">Productivity</option>
+                    <option value="Utility">Utility</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Education">Education</option>
+                    <option value="Health">Health</option>
+                    <option value="Finance">Finance</option>
+                </select>
+                
+                <div class="flex items-center gap-2">
+                    <button id="archiveBtn" onclick="toggleArchived()" class="px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-md text-sm bg-white text-gray-700 hover:bg-gray-50">
+                        Show Archived
+                    </button>
+                    
+                    <div class="flex bg-white rounded-lg p-1 shadow-md">
+                        <button id="gridBtn" onclick="setViewMode('grid')" class="p-2 rounded transition-all duration-200 bg-teal-500 text-white shadow-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </button>
+                        <button id="listBtn" onclick="setViewMode('list')" class="p-2 rounded transition-all duration-200 text-gray-500 hover:text-teal-600">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="max-w-6xl mx-auto p-4">
-        <div class="mb-4 flex gap-2">
-            <input type="text" id="search" placeholder="Search..." oninput="render()" class="flex-1 px-3 py-2 border rounded-lg">
-            <select id="category" onchange="render()" class="px-3 py-2 border rounded-lg">
-                <option value="All">All</option>
-                <option value="Business">Business</option>
-                <option value="Utility">Utility</option>
-                <option value="Entertainment">Entertainment</option>
-                <option value="Finance">Finance</option>
-                <option value="Education">Education</option>
-                <option value="Health">Health</option>
-            </select>
-        </div>
-
-        <div id="count" class="mb-4 text-gray-600"></div>
-        <div id="apps" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div id="appCount" class="mb-6 text-lg text-gray-700 font-medium">0 apps found</div>
         
-        <div id="empty" class="text-center py-20 hidden">
-            <div class="text-6xl mb-4">📱</div>
-            <p class="text-gray-500 mb-4">No apps yet</p>
-            <button onclick="showModal()" class="bg-teal-500 text-white px-6 py-3 rounded-xl font-bold">Add First App</button>
+        <div class="bg-white/50 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-white/60">
+            <div id="appsContainer">
+            </div>
+            
+            <div id="emptyState" class="text-center py-20 hidden">
+                <div class="text-6xl mb-4">📱</div>
+                <p class="text-gray-500 text-xl mb-4">No apps found matching your criteria</p>
+                <button onclick="showAddModal()" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-8 py-4 rounded-2xl font-bold hover:from-teal-600 hover:to-cyan-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                    Add your first app
+                </button>
+            </div>
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl p-6 w-full max-w-md">
-            <h2 class="text-xl font-bold mb-4">Add App</h2>
-            <input type="text" id="name" placeholder="App Name" class="w-full px-3 py-2 border rounded-lg mb-3">
-            <input type="url" id="url" placeholder="App URL" class="w-full px-3 py-2 border rounded-lg mb-3">
-            <select id="cat" class="w-full px-3 py-2 border rounded-lg mb-4">
-                <option value="Utility">Utility</option>
-                <option value="Business">Business</option>
-                <option value="Entertainment">Entertainment</option>
-                <option value="Finance">Finance</option>
-                <option value="Education">Education</option>
-                <option value="Health">Health</option>
-            </select>
-            <div class="flex gap-3">
-                <button onclick="add()" class="flex-1 bg-teal-500 text-white py-2 rounded-lg font-bold">Add</button>
-                <button onclick="hide()" class="flex-1 bg-gray-200 py-2 rounded-lg font-bold">Cancel</button>
+    <!-- Add/Edit App Modal -->
+    <div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div id="modalContent" class="bg-white rounded-3xl w-full max-w-md max-h-[70vh] flex flex-col shadow-2xl transition-all duration-300">
+            <div class="p-6 border-b border-gray-100 flex-shrink-0">
+                <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">Add New App</h2>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">App URL</label>
+                        <input type="url" id="appUrl" class="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none" placeholder="https://example.com/your-app">
+                        <div class="flex gap-3 mt-3">
+                            <button onclick="analyzeUrl()" id="analyzeBtn" class="px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl text-sm font-bold hover:from-teal-600 hover:to-cyan-700 disabled:opacity-50 transition-all duration-200">
+                                Auto-detect Info
+                            </button>
+                            <button onclick="toggleAdvanced()" id="advancedBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-200 flex items-center gap-2 transition-all duration-200">
+                                Advanced
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="advancedFields" class="hidden space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">App Name</label>
+                            <input type="text" id="appName" class="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none" placeholder="Enter app name">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                            <textarea id="appDescription" class="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none" rows="4" placeholder="Enter app description"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                                <select id="appCategory" class="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none">
+                                    <option value="Utility">Utility</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Productivity">Productivity</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Finance">Finance</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Version</label>
+                                <input type="text" id="appVersion" value="1.0.0" class="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-teal-200 focus:border-teal-500 focus:outline-none" placeholder="1.0.0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="detectedInfo" class="hidden p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200">
+                        <p class="text-sm text-emerald-700 font-bold">
+                            ✓ App detected: <span id="detectedName" class="font-bold"></span>
+                        </p>
+                        <p class="text-xs text-emerald-600 mt-1" id="detectedDesc"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6 border-t border-gray-100 flex-shrink-0">
+                <div class="flex gap-4">
+                    <button onclick="saveApp()" id="saveBtn" class="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-teal-600 hover:to-cyan-700 transition-all duration-200 shadow-lg">
+                        Add App
+                    </button>
+                    <button onclick="hideModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-2xl font-bold hover:bg-gray-200 transition-all duration-200">
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         var apps = [];
+        var searchTerm = '';
+        var selectedCategory = 'All';
+        var showArchived = false;
+        var viewMode = 'grid';
+        var showAdvanced = false;
+        var isAnalyzing = false;
+        var editingApp = null;
         
-        function save() { localStorage.setItem('apps', JSON.stringify(apps)); }
-        function load() { 
-            var data = localStorage.getItem('apps');
-            apps = data ? JSON.parse(data) : [];
-            render();
+        var newApp = {
+            url: '',
+            name: '',
+            description: '',
+            category: 'Utility',
+            version: '1.0.0'
+        };
+
+        function loadApps() {
+            try {
+                var saved = localStorage.getItem('personalAppStore');
+                apps = saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                apps = [];
+            }
+            renderApps();
         }
-        
-        function getIcon(cat) {
-            var icons = { 'Business': '👥', 'Finance': '💰', 'Entertainment': '🎮', 'Health': '❤️', 'Education': '📚' };
-            return icons[cat] || '🔧';
+
+        function saveApps() {
+            try {
+                localStorage.setItem('personalAppStore', JSON.stringify(apps));
+            } catch (e) {
+                console.error('Failed to save apps');
+            }
         }
-        
-        function render() {
-            var search = document.getElementById('search').value.toLowerCase();
-            var cat = document.getElementById('category').value;
-            var filtered = apps.filter(function(app) {
-                return app.name.toLowerCase().indexOf(search) >= 0 && (cat === 'All' || app.category === cat);
+
+        function getIconInfo(category, name, description) {
+            var text = (category + ' ' + name + ' ' + description).toLowerCase();
+            
+            if (text.indexOf('business') > -1 || text.indexOf('crm') > -1 || text.indexOf('contact') > -1) {
+                return { emoji: '👥', label: 'CRM', gradient: 'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)' };
+            } else if (text.indexOf('finance') > -1 || text.indexOf('money') > -1 || text.indexOf('bank') > -1) {
+                return { emoji: '💰', label: '$$', gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' };
+            } else if (text.indexOf('game') > -1 || text.indexOf('play') > -1 || text.indexOf('entertainment') > -1) {
+                return { emoji: '🎮', label: 'PLAY', gradient: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)' };
+            } else if (text.indexOf('health') > -1 || text.indexOf('medical') > -1 || text.indexOf('fitness') > -1) {
+                return { emoji: '❤️', label: 'HEALTH', gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' };
+            } else if (text.indexOf('education') > -1 || text.indexOf('learn') > -1 || text.indexOf('school') > -1) {
+                return { emoji: '📚', label: 'LEARN', gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' };
+            } else if (text.indexOf('productivity') > -1 || text.indexOf('task') > -1 || text.indexOf('organize') > -1) {
+                return { emoji: '📊', label: 'PROD', gradient: 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)' };
+            } else {
+                return { emoji: '🔧', label: 'UTIL', gradient: 'linear-gradient(135deg, #14b8a6 0%, #0891b2 100%)' };
+            }
+        }
+
+        function createAppIcon(app) {
+            var iconInfo = getIconInfo(app.category, app.name, app.description);
+            
+            var iconDiv = document.createElement('div');
+            iconDiv.className = 'w-24 h-24 rounded-2xl flex items-center justify-center text-white relative overflow-hidden transform hover:scale-105 transition-all duration-300 hover:rotate-3 shadow-lg app-icon';
+            iconDiv.style.background = iconInfo.gradient;
+            iconDiv.style.boxShadow = '0 10px 40px rgba(20, 184, 166, 0.3)';
+            
+            var bg1 = document.createElement('div');
+            bg1.className = 'absolute inset-0 bg-gradient-to-br from-white/30 to-transparent';
+            
+            var bg2 = document.createElement('div');
+            bg2.className = 'absolute inset-0 bg-gradient-to-tl from-black/10 to-transparent';
+            
+            var content = document.createElement('div');
+            content.className = 'relative z-10 drop-shadow-lg text-center font-bold';
+            
+            var emojiDiv = document.createElement('div');
+            emojiDiv.className = 'text-lg';
+            emojiDiv.textContent = iconInfo.emoji;
+            
+            var labelDiv = document.createElement('div');
+            labelDiv.className = 'text-xs font-bold';
+            labelDiv.textContent = iconInfo.label;
+            
+            content.appendChild(emojiDiv);
+            content.appendChild(labelDiv);
+            
+            var dot = document.createElement('div');
+            dot.className = 'absolute bottom-1 right-1 w-3 h-3 bg-white/20 rounded-full';
+            
+            iconDiv.appendChild(bg1);
+            iconDiv.appendChild(bg2);
+            iconDiv.appendChild(content);
+            iconDiv.appendChild(dot);
+            
+            return iconDiv;
+        }
+
+        function createAppCard(app) {
+            var card = document.createElement('div');
+            card.className = 'bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden app-card';
+            
+            var cardContent = document.createElement('div');
+            cardContent.className = 'p-6';
+            
+            var topSection = document.createElement('div');
+            topSection.className = 'flex gap-4 mb-4';
+            
+            var iconContainer = document.createElement('div');
+            iconContainer.className = 'flex-shrink-0';
+            iconContainer.appendChild(createAppIcon(app));
+            
+            var infoSection = document.createElement('div');
+            infoSection.className = 'flex-1 min-w-0';
+            
+            var headerDiv = document.createElement('div');
+            headerDiv.className = 'flex items-start justify-between mb-2';
+            
+            var titleDiv = document.createElement('div');
+            
+            var title = document.createElement('h3');
+            title.className = 'text-lg font-bold text-gray-900 truncate';
+            title.textContent = app.name;
+            
+            var categoryBadge = document.createElement('span');
+            categoryBadge.className = 'inline-block px-3 py-1 text-xs font-bold bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-full';
+            categoryBadge.textContent = app.category;
+            
+            titleDiv.appendChild(title);
+            titleDiv.appendChild(categoryBadge);
+            
+            var favoriteBtn = document.createElement('button');
+            favoriteBtn.className = 'p-1 rounded-full transition-colors hover:text-yellow-500';
+            favoriteBtn.className += app.isFavorite ? ' text-yellow-500' : ' text-gray-400';
+            favoriteBtn.onclick = function() { toggleFavorite(app.id); };
+            
+            var favoriteSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            favoriteSvg.setAttribute('width', '16');
+            favoriteSvg.setAttribute('height', '16');
+            favoriteSvg.setAttribute('viewBox', '0 0 24 24');
+            favoriteSvg.setAttribute('stroke', 'currentColor');
+            favoriteSvg.setAttribute('stroke-width', '2');
+            favoriteSvg.setAttribute('fill', app.isFavorite ? 'currentColor' : 'none');
+            
+            var favoritePolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            favoritePolygon.setAttribute('points', '12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26');
+            
+            favoriteSvg.appendChild(favoritePolygon);
+            favoriteBtn.appendChild(favoriteSvg);
+            
+            headerDiv.appendChild(titleDiv);
+            headerDiv.appendChild(favoriteBtn);
+            
+            var description = document.createElement('p');
+            description.className = 'text-gray-600 text-sm mb-3 line-clamp-2';
+            description.textContent = app.description;
+            
+            var metaDiv = document.createElement('div');
+            metaDiv.className = 'flex items-center gap-4 text-xs text-gray-500';
+            
+            var ratingDiv = document.createElement('div');
+            ratingDiv.className = 'flex items-center gap-1';
+            var ratingStar = document.createElement('span');
+            ratingStar.textContent = '★';
+            ratingStar.style.color = '#eab308';
+            var ratingText = document.createElement('span');
+            ratingText.textContent = app.rating;
+            ratingDiv.appendChild(ratingStar);
+            ratingDiv.appendChild(ratingText);
+            
+            var downloadsDiv = document.createElement('div');
+            downloadsDiv.className = 'flex items-center gap-1';
+            var downloadsIcon = document.createElement('span');
+            downloadsIcon.textContent = '↓';
+            var downloadsText = document.createElement('span');
+            downloadsText.textContent = app.downloads.toLocaleString();
+            downloadsDiv.appendChild(downloadsIcon);
+            downloadsDiv.appendChild(downloadsText);
+            
+            var dateDiv = document.createElement('div');
+            dateDiv.className = 'flex items-center gap-1';
+            var dateIcon = document.createElement('span');
+            dateIcon.textContent = '📅';
+            var dateText = document.createElement('span');
+            dateText.textContent = app.lastUpdated;
+            dateDiv.appendChild(dateIcon);
+            dateDiv.appendChild(dateText);
+            
+            metaDiv.appendChild(ratingDiv);
+            metaDiv.appendChild(downloadsDiv);
+            metaDiv.appendChild(dateDiv);
+            
+            infoSection.appendChild(headerDiv);
+            infoSection.appendChild(description);
+            infoSection.appendChild(metaDiv);
+            
+            topSection.appendChild(iconContainer);
+            topSection.appendChild(infoSection);
+            
+            var buttonSection = document.createElement('div');
+            buttonSection.className = 'flex items-center gap-2';
+            
+            var launchBtn = document.createElement('button');
+            launchBtn.className = 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg';
+            launchBtn.onclick = function() { launchApp(app.url); };
+            
+            var launchIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            launchIcon.setAttribute('width', '12');
+            launchIcon.setAttribute('height', '12');
+            launchIcon.setAttribute('viewBox', '0 0 24 24');
+            launchIcon.setAttribute('fill', 'none');
+            launchIcon.setAttribute('stroke', 'currentColor');
+            launchIcon.setAttribute('stroke-width', '2');
+            
+            var launchPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            launchPolygon.setAttribute('points', '5,3 19,12 5,21');
+            launchIcon.appendChild(launchPolygon);
+            
+            var launchText = document.createElement('span');
+            launchText.textContent = 'Launch';
+            
+            launchBtn.appendChild(launchIcon);
+            launchBtn.appendChild(launchText);
+            
+            var editBtn = document.createElement('button');
+            editBtn.className = 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-3 py-2 rounded-xl text-sm font-bold hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-1 shadow-md hover:shadow-lg';
+            editBtn.onclick = function() { editApp(app); };
+            editBtn.textContent = 'Edit';
+            
+            var spacer = document.createElement('div');
+            spacer.className = 'flex-1';
+            
+            var archiveBtn = document.createElement('button');
+            archiveBtn.className = 'p-2 text-gray-500 hover:text-teal-600 transition-colors rounded-lg hover:bg-teal-50';
+            archiveBtn.title = app.isArchived ? 'Restore' : 'Archive';
+            archiveBtn.textContent = '📦';
+            archiveBtn.onclick = function() { toggleArchive(app.id); };
+            
+            var deleteBtn = document.createElement('button');
+            deleteBtn.className = 'p-2 text-red-500 hover:text-red-700 transition-colors rounded-lg hover:bg-red-50';
+            deleteBtn.title = 'Delete';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.onclick = function() { deleteApp(app.id); };
+            
+            buttonSection.appendChild(launchBtn);
+            buttonSection.appendChild(editBtn);
+            buttonSection.appendChild(spacer);
+            buttonSection.appendChild(archiveBtn);
+            buttonSection.appendChild(deleteBtn);
+            
+            cardContent.appendChild(topSection);
+            cardContent.appendChild(buttonSection);
+            card.appendChild(cardContent);
+            
+            return card;
+        }
+
+        function getFilteredApps() {
+            return apps.filter(function(app) {
+                var matchesSearch = app.name.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1 ||
+                                   app.description.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1;
+                var matchesCategory = selectedCategory === 'All' || app.category === selectedCategory;
+                var matchesArchive = showArchived ? app.isArchived : !app.isArchived;
+                
+                return matchesSearch && matchesCategory && matchesArchive;
             });
+        }
+
+        function renderApps() {
+            var filteredApps = getFilteredApps();
+            var container = document.getElementById('appsContainer');
+            var emptyState = document.getElementById('emptyState');
+            var appCount = document.getElementById('appCount');
             
-            document.getElementById('count').textContent = filtered.length + ' apps';
-            var container = document.getElementById('apps');
-            var empty = document.getElementById('empty');
-            
-            if (filtered.length === 0) {
-                container.style.display = 'none';
-                empty.classList.remove('hidden');
-                return;
+            appCount.textContent = filteredApps.length + (filteredApps.length === 1 ? ' app found' : ' apps found');
+            if (showArchived) {
+                appCount.textContent = appCount.textContent + ' (including archived)';
             }
             
-            empty.classList.add('hidden');
-            container.style.display = 'grid';
             container.innerHTML = '';
             
-            filtered.forEach(function(app) {
-                var card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-xl shadow border hover:shadow-lg transition-shadow';
+            if (filteredApps.length > 0) {
+                var gridContainer = document.createElement('div');
+                if (viewMode === 'grid') {
+                    gridContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8';
+                } else {
+                    gridContainer.className = 'space-y-6';
+                }
                 
-                var header = document.createElement('div');
-                header.className = 'flex items-center gap-3 mb-3';
+                for (var i = 0; i < filteredApps.length; i++) {
+                    gridContainer.appendChild(createAppCard(filteredApps[i]));
+                }
                 
-                var icon = document.createElement('div');
-                icon.className = 'w-10 h-10 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center text-xl';
-                icon.textContent = getIcon(app.category);
-                
-                var info = document.createElement('div');
-                var title = document.createElement('h3');
-                title.className = 'font-bold text-gray-800';
-                title.textContent = app.name;
-                var badge = document.createElement('span');
-                badge.className = 'text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded-full';
-                badge.textContent = app.category;
-                
-                info.appendChild(title);
-                info.appendChild(badge);
-                header.appendChild(icon);
-                header.appendChild(info);
-                
-                var buttons = document.createElement('div');
-                buttons.className = 'flex gap-2';
-                
-                var launch = document.createElement('button');
-                launch.className = 'flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2 rounded-lg text-sm font-bold hover:from-emerald-600 hover:to-teal-700 transition-all';
-                launch.textContent = '▶ Launch';
-                launch.onclick = function() { window.open(app.url, '_blank'); };
-                
-                var del = document.createElement('button');
-                del.className = 'px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors';
-                del.textContent = '🗑️';
-                del.onclick = function() { 
-                    if(confirm('Delete ' + app.name + '?')) {
-                        apps = apps.filter(function(a) { return a.id !== app.id; });
-                        save(); render();
-                    }
-                };
-                
-                buttons.appendChild(launch);
-                buttons.appendChild(del);
-                card.appendChild(header);
-                card.appendChild(buttons);
-                container.appendChild(card);
-            });
-        }
-        
-        function showModal() { document.getElementById('modal').classList.remove('hidden'); }
-        function hide() {
-            document.getElementById('modal').classList.add('hidden');
-            document.getElementById('name').value = '';
-            document.getElementById('url').value = '';
-        }
-        
-        function add() {
-            var name = document.getElementById('name').value.trim();
-            var url = document.getElementById('url').value.trim();
-            var cat = document.getElementById('cat').value;
-            
-            if (name && url) {
-                apps.push({ id: Date.now(), name: name, url: url, category: cat });
-                save(); render(); hide();
+                container.appendChild(gridContainer);
+                container.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            } else {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
             }
         }
-        
-        load();
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            var gridBtn = document.getElementById('gridBtn');
+            var listBtn = document.getElementById('listBtn');
+            
+            if (mode === 'grid') {
+                gridBtn.className = 'p-2 rounded transition-all duration-200 bg-teal-500 text-white shadow-sm';
+                listBtn.className = 'p-2 rounded transition-all duration-200 text-gray-500 hover:text-teal-600';
+            } else {
+                gridBtn.className = 'p-2 rounded transition-all duration-200 text-gray-500 hover:text-teal-600';
+                listBtn.className = 'p-2 rounded transition-all duration-200 bg-teal-500 text-white shadow-sm';
+            }
+            
+            renderApps();
+        }
+
+        function showAddModal() {
+            editingApp = null;
+            document.getElementById('modalTitle').textContent = 'Add New App';
+            document.getElementById('saveBtn').textContent = 'Add App';
+            clearModalFields();
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function editApp(app) {
+            editingApp = app;
+            document.getElementById('modalTitle').textContent = 'Edit App';
+            document.getElementById('saveBtn').textContent = 'Update App';
+            
+            document.getElementById('appUrl').value = app.url;
+            document.getElementById('appName').value = app.name;
+            document.getElementById('appDescription').value = app.description;
+            document.getElementById('appCategory').value = app.category;
+            document.getElementById('appVersion').value = app.version || '1.0.0';
+            
+            if (!showAdvanced) {
+                toggleAdvanced();
+            }
+            
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            clearModalFields();
+            if (showAdvanced) {
+                toggleAdvanced();
+            }
+            editingApp = null;
+        }
+
+        function clearModalFields() {
+            document.getElementById('appUrl').value = '';
+            document.getElementById('appName').value = '';
+            document.getElementById('appDescription').value = '';
+            document.getElementById('appCategory').value = 'Utility';
+            document.getElementById('appVersion').value = '1.0.0';
+            document.getElementById('detectedInfo').classList.add('hidden');
+        }
+
+        function toggleAdvanced() {
+            showAdvanced = !showAdvanced;
+            var advancedFields = document.getElementById('advancedFields');
+            var modalContent = document.getElementById('modalContent');
+            
+            if (showAdvanced) {
+                advancedFields.classList.remove('hidden');
+                modalContent.className = 'bg-white rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl transition-all duration-300';
+            } else {
+                advancedFields.classList.add('hidden');
+                modalContent.className = 'bg-white rounded-3xl w-full max-w-md max-h-[70vh] flex flex-col shadow-2xl transition-all duration-300';
+            }
+        }
+
+        function analyzeUrl() {
+            var url = document.getElementById('appUrl').value.trim();
+            if (!url) return;
+            
+            isAnalyzing = true;
+            var analyzeBtn = document.getElementById('analyzeBtn');
+            analyzeBtn.textContent = 'Analyzing...';
+            analyzeBtn.disabled = true;
+            
+            setTimeout(function() {
+                var analyzedData = {
+                    name: 'Unknown App',
+                    description: 'Application detected from URL',
+                    category: 'Utility'
+                };
+
+                if (url.indexOf('business') > -1 || url.indexOf('crm') > -1 || url.indexOf('contact') > -1) {
+                    analyzedData = {
+                        name: url.split('/').pop() || 'Business Contact Manager',
+                        description: 'Advanced business contact management and CRM system for tracking clients, leads, and professional networking',
+                        category: 'Business'
+                    };
+                } else if (url.indexOf('game') > -1 || url.indexOf('play') > -1) {
+                    analyzedData = {
+                        name: url.split('/').pop() || 'Interactive Game',
+                        description: 'Engaging interactive entertainment application with dynamic gameplay features',
+                        category: 'Entertainment'
+                    };
+                } else if (url.indexOf('finance') > -1 || url.indexOf('money') > -1 || url.indexOf('bank') > -1) {
+                    analyzedData = {
+                        name: url.split('/').pop() || 'Finance Tracker',
+                        description: 'Comprehensive financial management and expense tracking application',
+                        category: 'Finance'
+                    };
+                }
+
+                document.getElementById('appName').value = analyzedData.name;
+                document.getElementById('appDescription').value = analyzedData.description;
+                document.getElementById('appCategory').value = analyzedData.category;
+                
+                document.getElementById('detectedName').textContent = analyzedData.name;
+                document.getElementById('detectedDesc').textContent = analyzedData.description;
+                document.getElementById('detectedInfo').classList.remove('hidden');
+                
+                analyzeBtn.textContent = 'Auto-detect Info';
+                analyzeBtn.disabled = false;
+                isAnalyzing = false;
+            }, 2000);
+        }
+
+        function saveApp() {
+            var url = document.getElementById('appUrl').value.trim();
+            var name = showAdvanced ? document.getElementById('appName').value.trim() : (url.split('/').pop() || 'New App');
+            var description = showAdvanced ? document.getElementById('appDescription').value.trim() : 'Added via Personal App Store';
+            var category = showAdvanced ? document.getElementById('appCategory').value : 'Utility';
+            var version = showAdvanced ? document.getElementById('appVersion').value.trim() : '1.0.0';
+            
+            if (!url || !name) return;
+            
+            if (editingApp) {
+                editingApp.url = url;
+                editingApp.name = name;
+                editingApp.description = description;
+                editingApp.category = category;
+                editingApp.version = version;
+                editingApp.lastUpdated = new Date().toISOString().split('T')[0];
+            } else {
+                var app = {
+                    id: Date.now(),
+                    name: name,
+                    url: url,
+                    description: description,
+                    category: category,
+                    version: version,
+                    rating: Math.floor(Math.random() * 5) + 1,
+                    downloads: Math.floor(Math.random() * 10000),
+                    lastUpdated: new Date().toISOString().split('T')[0],
+                    isFavorite: false,
+                    isArchived: false,
+                    tags: [category]
+                };
+                apps.push(app);
+            }
+            
+            saveApps();
+            renderApps();
+            hideModal();
+        }
+
+        function handleSearch() {
+            searchTerm = document.getElementById('searchInput').value;
+            renderApps();
+        }
+
+        function handleCategoryChange() {
+            selectedCategory = document.getElementById('categorySelect').value;
+            renderApps();
+        }
+
+        function toggleArchived() {
+            showArchived = !showArchived;
+            var btn = document.getElementById('archiveBtn');
+            
+            if (showArchived) {
+                btn.textContent = 'Hide Archived';
+                btn.className = 'px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-md text-sm bg-orange-500 text-white hover:bg-orange-600';
+            } else {
+                btn.textContent = 'Show Archived';
+                btn.className = 'px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-md text-sm bg-white text-gray-700 hover:bg-gray-50';
+            }
+            
+            renderApps();
+        }
+
+        function toggleFavorite(id) {
+            for (var i = 0; i < apps.length; i++) {
+                if (apps[i].id === id) {
+                    apps[i].isFavorite = !apps[i].isFavorite;
+                    break;
+                }
+            }
+            saveApps();
+            renderApps();
+        }
+
+        function toggleArchive(id) {
+            for (var i = 0; i < apps.length; i++) {
+                if (apps[i].id === id) {
+                    apps[i].isArchived = !apps[i].isArchived;
+                    break;
+                }
+            }
+            saveApps();
+            renderApps();
+        }
+
+        function deleteApp(id) {
+            if (confirm('Are you sure you want to permanently delete this app?')) {
+                apps = apps.filter(function(app) { return app.id !== id; });
+                saveApps();
+                renderApps();
+            }
+        }
+
+        function launchApp(url) {
+            if (url && url !== '#') {
+                window.open(url, '_blank');
+            } else {
+                alert('Launch URL not available for this app');
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'addModal') {
+                hideModal();
+            }
+        });
+
+        loadApps();
     </script>
 </body>
 </html>
