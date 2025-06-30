@@ -1,3 +1,490 @@
-npx create-react-app ai-training-podcast
-cd ai-training-podcast
-npm install lucide-react
+# AI Training Podcast Creator
+
+Transform presentations into interactive voice-guided training sessions.
+
+## Quick Setup
+
+1. Create a new repository on GitHub
+2. Clone it locally: `git clone https://github.com/yourusername/ai-training-podcast.git`
+3. Copy all files below into the repository folder
+4. Run: `npm install && npm start`
+
+---
+
+## File: package.json
+```json
+{
+  "name": "ai-training-podcast",
+  "version": "1.0.0",
+  "description": "AI Training Podcast Creator",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "lucide-react": "^0.263.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+  }
+}
+```
+
+---
+
+## File: public/index.html
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="AI Training Podcast Creator" />
+    <title>AI Training Podcast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+---
+
+## File: src/index.js
+```jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
+
+---
+
+## File: src/App.js
+```jsx
+import React, { useState, useRef, useEffect } from 'react';
+import { Play, Pause, SkipForward, SkipBack, Upload, Library, Settings } from 'lucide-react';
+
+const App = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [voiceSettings, setVoiceSettings] = useState({
+    rate: 1,
+    pitch: 1,
+    voice: 0
+  });
+  
+  const speechRef = useRef(null);
+
+  const slides = [
+    {
+      title: "Welcome to Understanding AI",
+      content: "Welcome to your comprehensive session on Artificial Intelligence! Today we'll explore the fascinating world of AI, from its historical roots to modern applications. We'll cover the key differences between AI and automation, examine real-world use cases, and address common misconceptions. This session will give you a solid foundation to understand what AI really is - not magic, but sophisticated mathematics solving complex problems. By the end, you'll confidently distinguish between different types of AI and know when to apply AI versus traditional automation solutions.",
+      duration: 60
+    },
+    {
+      title: "What is AI?",
+      content: "Artificial Intelligence is fundamentally the simulation of human intelligence in machines. Think of it as teaching computers to perform tasks that typically require human cognitive abilities. The five core functions include learning from experience, reasoning through problems, solving complex challenges, perceiving and interpreting the world around them, and understanding human language. Unlike simple programs that follow fixed instructions, AI systems can adapt and improve their performance over time. They analyze patterns in data, make predictions, and even generate creative content, all while mimicking the decision-making processes of the human brain.",
+      duration: 60
+    },
+    {
+      title: "History of AI - Early Years",
+      content: "The journey of AI began in 1950 when Alan Turing published his groundbreaking paper introducing the famous Turing Test - a method to determine if a machine can exhibit intelligent behavior equivalent to humans. The field officially launched at the 1956 Dartmouth Conference, where the term 'Artificial Intelligence' was coined. The 1960s and 70s saw the development of symbolic AI and rule-based systems, where programmers manually coded logical rules for machines to follow. These early systems were limited but laid the crucial groundwork for everything that followed, establishing the fundamental concepts of machine reasoning and knowledge representation.",
+      duration: 60
+    },
+    {
+      title: "History of AI - Modern Era",
+      content: "The 1980s brought us expert systems - AI programs that captured human expertise in specific domains like medical diagnosis or financial planning. A pivotal moment came in 1997 when IBM's Deep Blue defeated world chess champion Garry Kasparov, proving AI could outperform humans in complex strategic thinking. The 2010s marked the beginning of the deep learning revolution, powered by massive amounts of data and unprecedented computing power. This era transformed AI from an academic curiosity into a practical technology that could recognize images, understand speech, and even drive cars autonomously.",
+      duration: 60
+    },
+    {
+      title: "AI vs Automation",
+      content: "This is a crucial distinction that many people misunderstand. Traditional automation follows predetermined rules to perform repetitive tasks - think assembly lines or email filters with fixed criteria. AI, however, uses adaptive decision-making based on data patterns and can handle ambiguous situations. For example, an automated system might sort emails based on specific keywords, while an AI system can understand context, sentiment, and intent to make more nuanced decisions. Banking fraud detection perfectly illustrates this: automation might flag transactions over a certain amount, while AI analyzes spending patterns, location data, and behavioral anomalies to identify sophisticated fraud attempts.",
+      duration: 60
+    },
+    {
+      title: "Real-World Applications",
+      content: "AI is revolutionizing industries across the board. In healthcare, AI assists with medical diagnosis by analyzing X-rays, MRIs, and CT scans with accuracy that often matches or exceeds human radiologists. The automotive industry is being transformed by self-driving technology that uses AI to navigate complex traffic situations. Financial services leverage AI for algorithmic trading, making split-second decisions based on market data analysis. Customer service has been enhanced through intelligent chatbots that can handle complex queries and escalate to humans when needed. These applications demonstrate AI's versatility and its potential to augment human capabilities rather than simply replace them.",
+      duration: 60
+    },
+    {
+      title: "AI Is Mathematics, Not Magic",
+      content: "It's crucial to understand that despite media hype and science fiction portrayals, AI is fundamentally mathematics, not magic or sentience. Popular misconceptions about AI consciousness, world takeover scenarios, and artificial beings with emotions stem from anthropomorphizing what are essentially sophisticated mathematical tools. AI systems have no consciousness, emotions, desires, or self-awareness. They're algorithms processing data using mathematical operations like linear algebra and calculus. Neural networks, despite their brain-inspired name, are matrix operations performing statistical calculations. Understanding this mathematical foundation helps us appreciate AI's capabilities while maintaining realistic expectations about its limitations and proper applications in solving human problems.",
+      duration: 60
+    },
+    {
+      title: "Choosing Between AI and Automation",
+      content: "Understanding when to use AI versus traditional automation is crucial for successful implementation. Use automation for high-volume repetitive tasks with few exceptions, minimal edge cases, and low data variability - think payroll processing or email routing. Choose AI when dealing with unstructured data, when pattern recognition is required, or when inputs are evolving and ambiguous - like customer service inquiries or medical diagnosis. Consider cost and complexity: automation is typically cheaper and easier to implement, while AI requires more data, expertise, and ongoing maintenance. The most powerful approach often combines both: AI for decision-making and pattern recognition, automation for executing those decisions consistently and efficiently.",
+      duration: 60
+    }
+  ];
+
+  const presentations = [
+    { id: 1, title: "Understanding AI Fundamentals", slides: slides.length, duration: "8 minutes" },
+    { id: 2, title: "Machine Learning Deep Dive", slides: 15, duration: "15 minutes" },
+    { id: 3, title: "AI Ethics and Governance", slides: 12, duration: "12 minutes" }
+  ];
+
+  const jingleSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.2);
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('Audio context not available');
+    }
+  };
+
+  const speakText = (text) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const voices = speechSynthesis.getVoices();
+      
+      if (voices.length > voiceSettings.voice) {
+        utterance.voice = voices[voiceSettings.voice];
+      }
+      
+      utterance.rate = voiceSettings.rate;
+      utterance.pitch = voiceSettings.pitch;
+      
+      utterance.onend = () => {
+        if (currentSlide < slides.length - 1) {
+          setTimeout(() => {
+            jingleSound();
+            setTimeout(() => {
+              setCurrentSlide(prev => prev + 1);
+            }, 500);
+          }, 1000);
+        } else {
+          setIsPlaying(false);
+        }
+      };
+      
+      speechRef.current = utterance;
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      speechSynthesis.cancel();
+      setIsPlaying(false);
+    } else {
+      setIsPlaying(true);
+      speakText(slides[currentSlide].content);
+    }
+  };
+
+  const nextSlide = () => {
+    if (currentSlide < slides.length - 1) {
+      speechSynthesis.cancel();
+      jingleSound();
+      setTimeout(() => {
+        setCurrentSlide(prev => prev + 1);
+        if (isPlaying) {
+          setTimeout(() => speakText(slides[currentSlide + 1].content), 100);
+        }
+      }, 500);
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentSlide > 0) {
+      speechSynthesis.cancel();
+      setCurrentSlide(prev => prev - 1);
+      if (isPlaying) {
+        setTimeout(() => speakText(slides[currentSlide - 1].content), 100);
+      }
+    }
+  };
+
+  const jumpToSlide = (index) => {
+    speechSynthesis.cancel();
+    setCurrentSlide(index);
+    setIsPlaying(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      speechSynthesis.cancel();
+    };
+  }, []);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  if (showLibrary) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold">Training Library</h1>
+            <button 
+              onClick={() => setShowLibrary(false)}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+            >
+              Back to Current Session
+            </button>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {presentations.map((pres) => (
+              <div key={pres.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-colors cursor-pointer">
+                <h3 className="text-xl font-semibold mb-2">{pres.title}</h3>
+                <p className="text-blue-200 mb-4">{pres.slides} slides • {pres.duration}</p>
+                <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition-colors">
+                  Load Session
+                </button>
+              </div>
+            ))}
+          </div>
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Upload className="w-5 h-5" />
+              Upload New Presentation
+            </h2>
+            <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center">
+              <Upload className="w-12 h-12 mx-auto mb-4 text-blue-300" />
+              <p className="text-lg mb-2">Drop your PowerPoint or document here</p>
+              <p className="text-blue-200">or click to browse files</p>
+              <button className="mt-4 bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition-colors">
+                Select Files
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white">
+      {/* Header */}
+      <div className="bg-black/20 backdrop-blur-sm p-4">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold">AI Training Podcast</h1>
+          <div className="flex gap-4">
+            <button 
+              onClick={() => setShowLibrary(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+            >
+              <Library className="w-4 h-4" />
+              Library
+            </button>
+            <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors">
+              <Upload className="w-4 h-4" />
+              Upload
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {/* Current Slide */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">{slides[currentSlide].title}</h2>
+                <div className="text-sm bg-blue-600 px-3 py-1 rounded-full">
+                  Slide {currentSlide + 1} of {slides.length}
+                </div>
+              </div>
+              
+              <div className="bg-black/20 rounded-lg p-6 mb-6">
+                <h3 className="text-lg font-semibold mb-3 text-blue-200">Speaking Notes (60 seconds):</h3>
+                <p className="text-gray-100 leading-relaxed">{slides[currentSlide].content}</p>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mb-4">
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Progress</span>
+                  <span>{formatTime(currentSlide * 60)} / {formatTime(slides.length * 60)}</span>
+                </div>
+                <div className="bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${((currentSlide + 1) / slides.length) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex justify-center items-center gap-4">
+                <button 
+                  onClick={prevSlide}
+                  disabled={currentSlide === 0}
+                  className="bg-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed p-3 rounded-full transition-colors"
+                >
+                  <SkipBack className="w-5 h-5" />
+                </button>
+                
+                <button 
+                  onClick={togglePlayPause}
+                  className="bg-blue-600 hover:bg-blue-700 p-4 rounded-full transition-colors"
+                >
+                  {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+                </button>
+                
+                <button 
+                  onClick={nextSlide}
+                  disabled={currentSlide === slides.length - 1}
+                  className="bg-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed p-3 rounded-full transition-colors"
+                >
+                  <SkipForward className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Voice Settings */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <h3 className="flex items-center gap-2 font-semibold mb-3">
+                <Settings className="w-4 h-4" />
+                Voice Settings
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm mb-1">Speed</label>
+                  <input 
+                    type="range" 
+                    min="0.5" 
+                    max="2" 
+                    step="0.1"
+                    value={voiceSettings.rate}
+                    onChange={(e) => setVoiceSettings(prev => ({...prev, rate: parseFloat(e.target.value)}))}
+                    className="w-full"
+                  />
+                  <span className="text-xs text-gray-300">{voiceSettings.rate}x</span>
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Pitch</label>
+                  <input 
+                    type="range" 
+                    min="0.5" 
+                    max="2" 
+                    step="0.1"
+                    value={voiceSettings.pitch}
+                    onChange={(e) => setVoiceSettings(prev => ({...prev, pitch: parseFloat(e.target.value)}))}
+                    className="w-full"
+                  />
+                  <span className="text-xs text-gray-300">{voiceSettings.pitch}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar - Course Index */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <h3 className="font-semibold mb-4">Course Index</h3>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {slides.map((slide, index) => (
+                <button
+                  key={index}
+                  onClick={() => jumpToSlide(index)}
+                  className={`w-full text-left p-3 rounded-lg transition-colors ${
+                    index === currentSlide 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-white/5 hover:bg-white/10 text-gray-200'
+                  }`}
+                >
+                  <div className="font-medium text-sm">{index + 1}. {slide.title}</div>
+                  <div className="text-xs opacity-75">{slide.duration}s</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
+```
+
+---
+
+## File: .gitignore
+```
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+```
+
+---
+
+## Upload Instructions
+
+1. Create a new repository on GitHub
+2. Copy each file into the correct location in your project folder:
+   - `package.json` (root)
+   - `public/index.html` 
+   - `src/index.js`
+   - `src/App.js`
+   - `.gitignore` (root)
+3. Run these commands:
+   ```bash
+   npm install
+   npm start
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
+
+**That's it!** Your AI Training Podcast is now live on GitHub and ready to deploy to Netlify, Vercel, or any hosting platform.
