@@ -1,0 +1,447 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Play, Pause, SkipForward, SkipBack, Upload, Library, Volume2, Settings } from 'lucide-react';
+
+const AITrainingPodcast = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [voiceSettings, setVoiceSettings] = useState({
+    rate: 1,
+    pitch: 1,
+    voice: 0
+  });
+  
+  const audioRef = useRef(null);
+  const speechRef = useRef(null);
+
+  const slides = [
+    {
+      title: "Welcome to Understanding AI",
+      content: "Welcome to your comprehensive session on Artificial Intelligence! Today we'll explore the fascinating world of AI, from its historical roots to modern applications. We'll cover the key differences between AI and automation, examine real-world use cases, and address common misconceptions. This session will give you a solid foundation to understand what AI really is - not magic, but sophisticated mathematics solving complex problems. By the end, you'll confidently distinguish between different types of AI and know when to apply AI versus traditional automation solutions.",
+      duration: 60
+    },
+    {
+      title: "What is AI?",
+      content: "Artificial Intelligence is fundamentally the simulation of human intelligence in machines. Think of it as teaching computers to perform tasks that typically require human cognitive abilities. The five core functions include learning from experience, reasoning through problems, solving complex challenges, perceiving and interpreting the world around them, and understanding human language. Unlike simple programs that follow fixed instructions, AI systems can adapt and improve their performance over time. They analyze patterns in data, make predictions, and even generate creative content, all while mimicking the decision-making processes of the human brain.",
+      duration: 60
+    },
+    {
+      title: "History of AI - Early Years",
+      content: "The journey of AI began in 1950 when Alan Turing published his groundbreaking paper introducing the famous Turing Test - a method to determine if a machine can exhibit intelligent behavior equivalent to humans. The field officially launched at the 1956 Dartmouth Conference, where the term 'Artificial Intelligence' was coined. The 1960s and 70s saw the development of symbolic AI and rule-based systems, where programmers manually coded logical rules for machines to follow. These early systems were limited but laid the crucial groundwork for everything that followed, establishing the fundamental concepts of machine reasoning and knowledge representation.",
+      duration: 60
+    },
+    {
+      title: "History of AI - Modern Era",
+      content: "The 1980s brought us expert systems - AI programs that captured human expertise in specific domains like medical diagnosis or financial planning. A pivotal moment came in 1997 when IBM's Deep Blue defeated world chess champion Garry Kasparov, proving AI could outperform humans in complex strategic thinking. The 2010s marked the beginning of the deep learning revolution, powered by massive amounts of data and unprecedented computing power. This era transformed AI from an academic curiosity into a practical technology that could recognize images, understand speech, and even drive cars autonomously.",
+      duration: 60
+    },
+    {
+      title: "AI Milestones",
+      content: "Several breakthrough moments showcase AI's rapid evolution. In 2011, IBM Watson made headlines by defeating human champions on the quiz show Jeopardy!, demonstrating sophisticated natural language processing and knowledge retrieval. The 2016 victory of Google's AlphaGo over Go champion Lee Sedol was particularly significant because Go was considered too complex for computers due to its astronomical number of possible moves. The 2020s have seen AI integrate into virtually every industry - from healthcare diagnosis and drug discovery to financial trading, creative content generation, and personalized recommendations that shape our daily digital experiences.",
+      duration: 60
+    },
+    {
+      title: "Types of AI",
+      content: "AI is categorized into three main types based on capability. Narrow AI, also called Weak AI, is what we see today - systems designed for specific tasks like image recognition, language translation, or game playing. These systems excel in their narrow domain but can't transfer knowledge to other areas. General AI, or Strong AI, represents human-level cognition across all domains - a system that could understand, learn, and apply intelligence as flexibly as humans. This remains theoretical. Superintelligent AI goes beyond human capability entirely, representing a speculative future where AI surpasses human intelligence in all areas - a concept that fascinates researchers but remains in the realm of science fiction.",
+      duration: 60
+    },
+    {
+      title: "AI Categories by Functionality",
+      content: "We can also classify AI by how it processes information and makes decisions. Reactive Machines are the simplest form - they analyze current situations and respond accordingly, but have no memory of past experiences. IBM's Deep Blue chess computer exemplifies this. Limited Memory systems can use past experiences to inform current decisions, like self-driving cars that remember recent traffic patterns. Theory of Mind AI, still in development, would understand that others have beliefs and intentions different from their own. Self-Aware AI remains hypothetical - systems that would have consciousness and self-understanding, representing the ultimate goal of some AI researchers but raising profound philosophical questions.",
+      duration: 60
+    },
+    {
+      title: "AI vs Automation - Understanding the Difference",
+      content: "This is a crucial distinction that many people misunderstand. Traditional automation follows predetermined rules to perform repetitive tasks - think assembly lines or email filters with fixed criteria. AI, however, uses adaptive decision-making based on data patterns and can handle ambiguous situations. For example, an automated system might sort emails based on specific keywords, while an AI system can understand context, sentiment, and intent to make more nuanced decisions. Banking fraud detection perfectly illustrates this: automation might flag transactions over a certain amount, while AI analyzes spending patterns, location data, and behavioral anomalies to identify sophisticated fraud attempts.",
+      duration: 60
+    },
+    {
+      title: "Key Technologies Behind AI",
+      content: "Four fundamental technologies power modern AI systems. Machine Learning enables computers to learn patterns from data without explicit programming for every scenario. Deep Learning uses neural networks inspired by the human brain to process complex, unstructured data like images and natural language. Natural Language Processing allows AI to understand, interpret, and generate human language, enabling chatbots, translation services, and voice assistants. Computer Vision gives AI the ability to analyze and understand visual information, powering everything from medical imaging diagnosis to autonomous vehicle navigation. These technologies often work together, creating sophisticated AI systems that can perceive, understand, and interact with the world.",
+      duration: 60
+    },
+    {
+      title: "Real-World Applications",
+      content: "AI is revolutionizing industries across the board. In healthcare, AI assists with medical diagnosis by analyzing X-rays, MRIs, and CT scans with accuracy that often matches or exceeds human radiologists. The automotive industry is being transformed by self-driving technology that uses AI to navigate complex traffic situations. Financial services leverage AI for algorithmic trading, making split-second decisions based on market data analysis. Customer service has been enhanced through intelligent chatbots that can handle complex queries and escalate to humans when needed. These applications demonstrate AI's versatility and its potential to augment human capabilities rather than simply replace them.",
+      duration: 60
+    },
+    {
+      title: "Ethical Considerations in AI",
+      content: "As AI becomes more prevalent, we must address significant ethical challenges. Bias and fairness issues arise when AI systems perpetuate or amplify existing societal biases present in training data, potentially leading to discriminatory outcomes in hiring, lending, or law enforcement. Privacy concerns emerge as AI systems require vast amounts of personal data to function effectively. Job displacement is a real concern as AI automates various roles, though it also creates new opportunities. Accountability becomes complex when AI systems make decisions that affect people's lives - who is responsible when an AI system makes a mistake? These considerations require ongoing dialogue between technologists, policymakers, and society.",
+      duration: 60
+    },
+    {
+      title: "Challenges in AI Development",
+      content: "Several technical and practical challenges face AI development. Data quality remains paramount - AI systems are only as good as the data they're trained on, and poor-quality data leads to poor-quality decisions. Interpretability is crucial, especially in high-stakes applications like healthcare or finance, where we need to understand how AI reached its conclusions. Security vulnerabilities can be exploited by malicious actors who might poison training data or manipulate AI outputs. Regulatory frameworks struggle to keep pace with rapidly evolving technology, creating uncertainty for businesses and potential gaps in consumer protection. Addressing these challenges requires collaboration across technical, legal, and policy domains.",
+      duration: 60
+    },
+    {
+      title: "How AI Makes Decisions",
+      content: "Understanding AI decision-making processes helps demystify the technology. AI systems start by collecting data from their environment - this could be text, images, sensor readings, or user interactions. They then process this data using trained models, often neural networks, which have learned patterns from thousands or millions of examples. The system identifies patterns and draws inferences based on its training, essentially making educated guesses about what the data means or what action to take. Finally, it selects actions based on predictions or optimization goals. The quality of these decisions depends heavily on the quality and representativeness of training data, the sophistication of algorithms, and the system's awareness of context.",
+      duration: 60
+    },
+    {
+      title: "MCP AI vs Agentic AI",
+      content: "This distinction highlights different approaches to AI system design. MCP AI, or Most Common Pattern AI, is predictive and based on learned data patterns from training. These systems are passive and reactive, responding to inputs by finding the most statistically likely output based on their training. Language models and recommendation systems exemplify this approach. Agentic AI, conversely, is goal-directed and autonomous, capable of proactive decision-making to achieve specific objectives. Examples include AlphaGo, which developed novel strategies to win games, and self-driving cars that must navigate dynamic environments while pursuing the goal of safe transportation. Agentic AI represents a more sophisticated approach that can adapt strategies to achieve desired outcomes.",
+      duration: 60
+    },
+    {
+      title: "The Future of AI",
+      content: "Looking ahead, several trends will shape AI's evolution. The integration of AI with Internet of Things devices and 5G networks will create more responsive, interconnected intelligent systems. Personalization will become increasingly sophisticated, with AI systems understanding individual preferences and needs at unprecedented levels. Augmented intelligence - AI working alongside humans rather than replacing them - will become the dominant paradigm, enhancing human capabilities rather than substituting for them. Smart cities will leverage AI to optimize traffic flow, energy consumption, and public services. These developments promise to make AI more seamlessly integrated into daily life while addressing current limitations and challenges.",
+      duration: 60
+    },
+    {
+      title: "AI Is Mathematics, Not Magic",
+      content: "It's crucial to understand that despite media hype and science fiction portrayals, AI is fundamentally mathematics, not magic or sentience. Popular misconceptions about AI consciousness, world takeover scenarios, and artificial beings with emotions stem from anthropomorphizing what are essentially sophisticated mathematical tools. AI systems have no consciousness, emotions, desires, or self-awareness. They're algorithms processing data using mathematical operations like linear algebra and calculus. Neural networks, despite their brain-inspired name, are matrix operations performing statistical calculations. Understanding this mathematical foundation helps us appreciate AI's capabilities while maintaining realistic expectations about its limitations and proper applications in solving human problems.",
+      duration: 60
+    },
+    {
+      title: "AI as Statistical Guesswork",
+      content: "At its core, AI performs sophisticated statistical guesswork using predictive models that output probabilistic results rather than absolute truths. When a language model generates text, it's predicting the most statistically likely next word based on patterns in its training data. When computer vision identifies objects in images, it's calculating probabilities that certain pixel patterns correspond to specific objects. This probabilistic nature explains why AI systems can sometimes make surprising errors or generate unexpected outputs. The 'intelligence' we perceive comes from the system's ability to find subtle patterns in vast amounts of data and make reasonable predictions, but it's important to remember these are statistical inferences, not conscious understanding or reasoning.",
+      duration: 60
+    },
+    {
+      title: "Why AI Feels Like Magic",
+      content: "AI can seem magical because of its impressive capabilities in language fluency, image generation, and pattern recognition that rival or exceed human performance in specific domains. Large language models can engage in seemingly natural conversations, generate creative content, and solve complex problems. Image generation AI can create photorealistic artwork from simple text descriptions. These capabilities can feel supernatural because they emerge from mathematical processes that are invisible to users. The complexity and sophistication of modern AI systems, combined with their ability to handle tasks we associate with human intelligence and creativity, creates an almost magical user experience that can be difficult to reconcile with the underlying mathematical reality.",
+      duration: 60
+    },
+    {
+      title: "Dangers of Anthropomorphizing AI",
+      content: "Treating AI as if it were human-like leads to misleading interpretations and potentially dangerous policy decisions. When we attribute human characteristics like consciousness, intentions, or emotions to AI systems, we risk misunderstanding their capabilities and limitations. This anthropomorphization can lead to over-reliance on AI in situations where human judgment is crucial, or conversely, to unnecessary fear about AI 'taking over' when the real risks lie elsewhere. Policymakers might create regulations based on science fiction scenarios rather than actual technical realities. It's essential to maintain a clear understanding that AI systems are tools created and controlled by humans, not independent entities with their own goals or desires.",
+      duration: 60
+    },
+    {
+      title: "Will AI Take Over the World?",
+      content: "The short answer is no - not in the way popular culture depicts. AI systems have no inherent goals or autonomous desires for power or control. They're tools designed and deployed by humans for specific purposes. Current AI lacks the general intelligence, self-awareness, or independent motivation necessary for 'world takeover' scenarios. AI systems operate within the parameters set by their creators and the data they're trained on. The real concern isn't AI rebellion, but rather how humans choose to design, deploy, and govern these powerful tools. The responsibility for AI's impact on society lies with human decision-makers - engineers, business leaders, and policymakers who determine how AI technologies are developed and used.",
+      duration: 60
+    },
+    {
+      title: "Real Risks of AI",
+      content: "While AI won't take over the world, it does present genuine risks that deserve serious attention. Bias in AI systems can perpetuate or amplify discrimination in critical areas like hiring, lending, and criminal justice. Misinformation can be generated at scale through deepfakes and AI-generated content that's increasingly difficult to distinguish from reality. Surveillance capabilities enhanced by AI can threaten privacy and civil liberties if misused by governments or corporations. Labor market disruption is real as AI automates various jobs, potentially affecting millions of workers. These risks are manageable through proper governance, regulation, and ethical development practices, but they require proactive attention rather than reactive responses.",
+      duration: 60
+    },
+    {
+      title: "The Human Role in AI",
+      content: "Humans remain central to AI development and deployment. We design AI systems, deciding what problems they should solve and how they should approach those problems. We're responsible for training AI systems, curating the data they learn from and setting the parameters that guide their behavior. Governance and oversight are human responsibilities - creating policies, regulations, and ethical frameworks that ensure AI serves human interests. Most importantly, we bear ethical responsibility for AI's impact on society. This includes ensuring fairness, protecting privacy, maintaining human agency, and addressing negative consequences. The future of AI isn't predetermined; it's shaped by the choices humans make about how to develop and deploy these technologies.",
+      duration: 60
+    },
+    {
+      title: "Common AI Misconceptions",
+      content: "Let's address some persistent myths about AI. First, AI is not alive, conscious, or self-aware - it processes information but doesn't experience consciousness as humans do. AI doesn't have emotions, desires, or personal motivations - it follows programmed objectives and learned patterns. AI isn't inherently good or evil - it's a tool whose impact depends on how humans design and use it. AI won't necessarily replace all human jobs - while it may automate some roles, it also creates new opportunities and often works best in partnership with humans. AI isn't infallible - it can make mistakes, exhibit biases, and produce unexpected results. Understanding these realities helps us approach AI with appropriate expectations and make informed decisions about its use.",
+      duration: 60
+    },
+    {
+      title: "Why Transparency Matters",
+      content: "Transparency in AI development and deployment is crucial for building trust and ensuring responsible use. When people understand how AI systems work, they can make informed decisions about when and how to use them. Transparency helps identify potential biases, errors, or limitations in AI systems before they cause harm. It enables meaningful oversight and accountability, allowing regulators and society to ensure AI serves the public interest. Demystifying AI through education and clear communication prevents both unfounded fears and unrealistic expectations. Encouraging informed use means people can leverage AI's benefits while understanding its limitations, leading to more effective and ethical applications across society.",
+      duration: 60
+    },
+    {
+      title: "Choosing Between AI and Automation",
+      content: "Understanding when to use AI versus traditional automation is crucial for successful implementation. Use automation for high-volume repetitive tasks with few exceptions, minimal edge cases, and low data variability - think payroll processing or email routing. Choose AI when dealing with unstructured data, when pattern recognition is required, or when inputs are evolving and ambiguous - like customer service inquiries or medical diagnosis. Consider cost and complexity: automation is typically cheaper and easier to implement, while AI requires more data, expertise, and ongoing maintenance. The most powerful approach often combines both: AI for decision-making and pattern recognition, automation for executing those decisions consistently and efficiently.",
+      duration: 60
+    },
+    {
+      title: "Framework for Decision Making",
+      content: "Here's a practical framework for choosing the right approach. Ask yourself: Is the task primarily rule-based with clear, consistent procedures? If yes, traditional automation is likely your best choice. Does the task require pattern recognition, handling of ambiguous inputs, or adaptation to changing conditions? If yes, AI is probably necessary. Do you need both intelligent decision-making and consistent execution? Consider a hybrid approach that combines AI and automation. Evaluate your available resources: automation typically requires less investment and expertise, while AI needs quality data, specialized skills, and ongoing maintenance. Consider the stakes: high-risk decisions may require human oversight regardless of the technology chosen. This framework helps ensure you match the right solution to your specific problem.",
+      duration: 60
+    }
+  ];
+
+  const presentations = [
+    { id: 1, title: "Understanding AI Fundamentals", slides: slides.length, duration: "26 minutes" },
+    { id: 2, title: "Machine Learning Deep Dive", slides: 15, duration: "15 minutes" },
+    { id: 3, title: "AI Ethics and Governance", slides: 12, duration: "12 minutes" }
+  ];
+
+  const jingleSound = () => {
+    // Create a simple audio jingle using Web Audio API
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.2);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  };
+
+  const speakText = (text) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const voices = speechSynthesis.getVoices();
+      
+      if (voices.length > voiceSettings.voice) {
+        utterance.voice = voices[voiceSettings.voice];
+      }
+      
+      utterance.rate = voiceSettings.rate;
+      utterance.pitch = voiceSettings.pitch;
+      
+      utterance.onend = () => {
+        if (currentSlide < slides.length - 1) {
+          setTimeout(() => {
+            jingleSound();
+            setTimeout(() => {
+              setCurrentSlide(prev => prev + 1);
+            }, 500);
+          }, 1000);
+        } else {
+          setIsPlaying(false);
+        }
+      };
+      
+      speechRef.current = utterance;
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      speechSynthesis.cancel();
+      setIsPlaying(false);
+    } else {
+      setIsPlaying(true);
+      speakText(slides[currentSlide].content);
+    }
+  };
+
+  const nextSlide = () => {
+    if (currentSlide < slides.length - 1) {
+      speechSynthesis.cancel();
+      jingleSound();
+      setTimeout(() => {
+        setCurrentSlide(prev => prev + 1);
+        if (isPlaying) {
+          setTimeout(() => speakText(slides[currentSlide + 1].content), 100);
+        }
+      }, 500);
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentSlide > 0) {
+      speechSynthesis.cancel();
+      setCurrentSlide(prev => prev - 1);
+      if (isPlaying) {
+        setTimeout(() => speakText(slides[currentSlide - 1].content), 100);
+      }
+    }
+  };
+
+  const jumpToSlide = (index) => {
+    speechSynthesis.cancel();
+    setCurrentSlide(index);
+    setIsPlaying(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      speechSynthesis.cancel();
+    };
+  }, []);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  if (showLibrary) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold">Training Library</h1>
+            <button 
+              onClick={() => setShowLibrary(false)}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+            >
+              Back to Current Session
+            </button>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {presentations.map((pres) => (
+              <div key={pres.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-colors cursor-pointer">
+                <h3 className="text-xl font-semibold mb-2">{pres.title}</h3>
+                <p className="text-blue-200 mb-4">{pres.slides} slides • {pres.duration}</p>
+                <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition-colors">
+                  Load Session
+                </button>
+              </div>
+            ))}
+          </div>
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Upload className="w-5 h-5" />
+              Upload New Presentation
+            </h2>
+            <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center">
+              <Upload className="w-12 h-12 mx-auto mb-4 text-blue-300" />
+              <p className="text-lg mb-2">Drop your PowerPoint or document here</p>
+              <p className="text-blue-200">or click to browse files</p>
+              <button className="mt-4 bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition-colors">
+                Select Files
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white">
+      {/* Header */}
+      <div className="bg-black/20 backdrop-blur-sm p-4">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold">AI Training Podcast</h1>
+          <div className="flex gap-4">
+            <button 
+              onClick={() => setShowLibrary(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+            >
+              <Library className="w-4 h-4" />
+              Library
+            </button>
+            <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors">
+              <Upload className="w-4 h-4" />
+              Upload
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {/* Current Slide */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">{slides[currentSlide].title}</h2>
+                <div className="text-sm bg-blue-600 px-3 py-1 rounded-full">
+                  Slide {currentSlide + 1} of {slides.length}
+                </div>
+              </div>
+              
+              <div className="bg-black/20 rounded-lg p-6 mb-6">
+                <h3 className="text-lg font-semibold mb-3 text-blue-200">Speaking Notes (60 seconds):</h3>
+                <p className="text-gray-100 leading-relaxed">{slides[currentSlide].content}</p>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mb-4">
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Progress</span>
+                  <span>{formatTime(currentSlide * 60)} / {formatTime(slides.length * 60)}</span>
+                </div>
+                <div className="bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${((currentSlide + 1) / slides.length) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex justify-center items-center gap-4">
+                <button 
+                  onClick={prevSlide}
+                  disabled={currentSlide === 0}
+                  className="bg-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed p-3 rounded-full transition-colors"
+                >
+                  <SkipBack className="w-5 h-5" />
+                </button>
+                
+                <button 
+                  onClick={togglePlayPause}
+                  className="bg-blue-600 hover:bg-blue-700 p-4 rounded-full transition-colors"
+                >
+                  {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+                </button>
+                
+                <button 
+                  onClick={nextSlide}
+                  disabled={currentSlide === slides.length - 1}
+                  className="bg-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed p-3 rounded-full transition-colors"
+                >
+                  <SkipForward className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Voice Settings */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <h3 className="flex items-center gap-2 font-semibold mb-3">
+                <Settings className="w-4 h-4" />
+                Voice Settings
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm mb-1">Speed</label>
+                  <input 
+                    type="range" 
+                    min="0.5" 
+                    max="2" 
+                    step="0.1"
+                    value={voiceSettings.rate}
+                    onChange={(e) => setVoiceSettings(prev => ({...prev, rate: parseFloat(e.target.value)}))}
+                    className="w-full"
+                  />
+                  <span className="text-xs text-gray-300">{voiceSettings.rate}x</span>
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Pitch</label>
+                  <input 
+                    type="range" 
+                    min="0.5" 
+                    max="2" 
+                    step="0.1"
+                    value={voiceSettings.pitch}
+                    onChange={(e) => setVoiceSettings(prev => ({...prev, pitch: parseFloat(e.target.value)}))}
+                    className="w-full"
+                  />
+                  <span className="text-xs text-gray-300">{voiceSettings.pitch}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar - Course Index */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <h3 className="font-semibold mb-4">Course Index</h3>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {slides.map((slide, index) => (
+                <button
+                  key={index}
+                  onClick={() => jumpToSlide(index)}
+                  className={`w-full text-left p-3 rounded-lg transition-colors ${
+                    index === currentSlide 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-white/5 hover:bg-white/10 text-gray-200'
+                  }`}
+                >
+                  <div className="font-medium text-sm">{index + 1}. {slide.title}</div>
+                  <div className="text-xs opacity-75">{slide.duration}s</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AITrainingPodcast;
