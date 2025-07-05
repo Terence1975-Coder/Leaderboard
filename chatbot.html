@@ -434,7 +434,7 @@
     <div class="container">
         <div class="header">
             <h1>🤖 AI Bootcamp Screening Assistant</h1>
-            <p>Production-Ready Gmail Integration - Deployed on Cloud Run</p>
+            <p>Live Gmail Integration - Ready for Production Use</p>
         </div>
         
         <div class="main-content">
@@ -461,7 +461,7 @@
                             📧 Test Email
                         </button>
                         <button class="audio-btn" id="checkServer" onclick="window.chatBot.checkServerStatus()" style="background: #34495e;">
-                            💡 CSP Info
+                            ℹ️ Email Info
                         </button>
                         <div class="voice-indicator" id="voiceIndicator">🎤 Listening...</div>
                         <button class="audio-btn" id="stopAudio" onclick="window.chatBot.stopAudio()">
@@ -490,13 +490,13 @@
                 <h3>📊 Live Assessment</h3>
                 
                 <div style="background: #e8f6f3; padding: 8px; border-radius: 5px; margin-bottom: 12px; font-size: 11px;">
-                    <strong>🌟 Production Features:</strong><br>
-                    • 📧 Working Gmail integration on Cloud Run<br>
+                    <strong>🎉 Production Features:</strong><br>
+                    • 📧 Direct Gmail integration with CORS<br>
+                    • 🔐 App password authentication<br>
                     • 🔍 Internet location fact-checking<br>
-                    • 🚀 Real-time email reports<br>
                     • 💬 Course Q&A with source references<br>
                     • 🔊 Audio & voice features<br>
-                    • 🛡️ CORS-enabled for secure API calls
+                    • 📊 Professional HTML email reports
                 </div>
                 
                 <div class="criteria-item" id="location">
@@ -543,15 +543,15 @@
             constructor() {
                 // 📧 EMAIL INTEGRATION CONFIGURATION  
                 this.config = {
-                    // NEW: Your custom Gmail integration service with CORS
+                    // Updated Gmail service URL with CORS and app password
                     emailServerUrl: 'https://gmail-bootcamp-service-15798212733.europe-west2.run.app/send-email',
                     emailRecipient: 'thewhiterabbittest@gmail.com',
                     
-                    // Alternative: FormSubmit service (CSP-friendly)
+                    // Alternative: FormSubmit service (backup)
                     formSubmitUrl: 'https://formsubmit.co/thewhiterabbittest@gmail.com',
                     
-                    // Alternative: Use mailto links as fallback
-                    useFormSubmit: false // Set to false to use your Gmail integration
+                    // Use direct Gmail integration
+                    useFormSubmit: false
                 };
                 
                 this.currentStep = 'intro';
@@ -1476,35 +1476,39 @@ Are you still interested in progressing with this opportunity?`);
                 checkButton.disabled = true;
                 
                 this.addMessage('bot', `
-                    🔍 <strong>Content Security Policy (CSP) Limitation Detected</strong><br><br>
-                    
-                    <div style="background: #fff3cd; padding: 12px; border-radius: 5px; border-left: 4px solid #f39c12; margin: 10px 0;">
-                    <strong>⚠️ Why Direct API Calls Don't Work:</strong><br>
-                    Claude.ai's artifact environment has security restrictions (Content Security Policy) that prevent external API calls to your server. This is normal and expected.
-                    </div>
+                    📧 <strong>Gmail Integration Service Information</strong><br><br>
                     
                     <div style="background: #d4edda; padding: 12px; border-radius: 5px; border-left: 4px solid #27ae60; margin: 10px 0;">
-                    <strong>✅ Working Solutions:</strong><br>
-                    • <strong>Copy/Paste:</strong> Copy the email report and manually send<br>
-                    • <strong>Download:</strong> Download report as .txt file<br>
-                    • <strong>Email Client:</strong> Open pre-filled email<br>
-                    • <strong>FormSubmit:</strong> May work as alternative service<br>
+                    <strong>✅ Active Configuration:</strong><br>
+                    • <strong>Service URL:</strong> ${this.config.emailServerUrl}<br>
+                    • <strong>Service Name:</strong> gmail-bootcamp-service<br>
+                    • <strong>Region:</strong> europe-west2<br>
+                    • <strong>Authentication:</strong> Gmail App Password<br>
+                    • <strong>CORS:</strong> Enabled for GitHub Pages
                     </div>
                     
                     <div style="background: #e8f4f8; padding: 12px; border-radius: 5px; border-left: 4px solid #3498db; margin: 10px 0;">
-                    <strong>🛠️ For Production Use:</strong><br>
-                    • Host this chatbot on your own domain<br>
-                    • Use server-side email sending<br>
-                    • Integrate with existing form systems<br>
-                    • Your Gmail integration will work perfectly from your own site
+                    <strong>📧 Email Features:</strong><br>
+                    • <strong>Professional HTML Reports:</strong> Beautiful candidate assessments<br>
+                    • <strong>Automatic Scoring:</strong> 8+ = Highly Suitable, 6+ = Suitable<br>
+                    • <strong>Complete Responses:</strong> All conversation details included<br>
+                    • <strong>Next Steps:</strong> Clear recommendations for each candidate<br>
+                    • <strong>Direct Delivery:</strong> Emails sent to ${this.config.emailRecipient}
                     </div>
                     
-                    <strong>💡 Your server at:</strong><br>
-                    <code>https://hello-15798212733.europe-west2.run.app</code><br>
-                    is likely working fine - the issue is just the CSP restriction in this environment.
+                    <div style="background: #fff3cd; padding: 12px; border-radius: 5px; border-left: 4px solid #f39c12; margin: 10px 0;">
+                    <strong>🔧 If Emails Don't Arrive:</strong><br>
+                    1. Check spam/junk folder<br>
+                    2. Verify Gmail app password is correct<br>
+                    3. Ensure 2-step verification is enabled<br>
+                    4. Test connection using the "📧 Test Email" button<br>
+                    5. Check Gmail-bootcamp-service logs in Cloud Run
+                    </div>
+                    
+                    <strong>💡 Service Status:</strong> The Gmail integration uses your deployed Cloud Run service with proper CORS headers and app password authentication for reliable email delivery.
                 `);
                 
-                checkButton.textContent = '💡 CSP Info';
+                checkButton.textContent = 'ℹ️ Email Info';
                 checkButton.disabled = false;
             }
 
@@ -1513,12 +1517,12 @@ Are you still interested in progressing with this opportunity?`);
                 testButton.textContent = '🔄 Testing...';
                 testButton.disabled = true;
                 
-                this.addMessage('bot', '🔧 <strong>Testing Gmail Integration Service...</strong><br>Connecting to your custom service with CORS headers...');
+                this.addMessage('bot', `🔧 <strong>Testing Gmail Service Connection...</strong><br>Testing connection to: ${this.config.emailServerUrl}`);
                 
                 try {
                     const testData = {
                         to: this.config.emailRecipient,
-                        subject: 'Connection Test - AI Bootcamp Chatbot',
+                        subject: 'Email Connection Test - AI Bootcamp Chatbot',
                         candidateData: {
                             name: 'Test User',
                             location: 'Test Location',
@@ -1531,7 +1535,7 @@ Are you still interested in progressing with this opportunity?`);
                             responses: [{step: 'test', response: 'This is a connection test'}],
                             rescheduleType: null,
                             timestamp: new Date().toISOString(),
-                            recommendation: 'CONNECTION TEST - This is a test'
+                            recommendation: 'CONNECTION TEST - This is a test email'
                         }
                     };
                     
@@ -1553,39 +1557,24 @@ Are you still interested in progressing with this opportunity?`);
                     }
                     
                     const result = await response.json();
-                    this.addMessage('bot', `
-                        🎉 <strong>Connection Test Successful!</strong><br><br>
-                        
-                        <div style="background: #d4edda; padding: 12px; border-radius: 5px; border-left: 4px solid #27ae60; margin: 10px 0;">
-                        ✅ <strong>Gmail Integration Service Working!</strong><br>
-                        • <strong>Service URL:</strong> Working correctly<br>
-                        • <strong>CORS Headers:</strong> Properly configured<br>
-                        • <strong>Response:</strong> ${result.status}<br>
-                        • <strong>Message ID:</strong> ${result.messageId}
-                        </div>
-                        
-                        <strong>🚀 Your email integration is ready!</strong> When candidates complete screenings, their reports will be processed by your Gmail service.
-                    `);
+                    this.addMessage('bot', `✅ <strong>Email Test Successful!</strong><br>Connection established successfully with gmail-bootcamp-service.<br><br><strong>Server Response:</strong><br>• Success: ${result.success}<br>• Message ID: ${result.messageId}<br>• Status: ${result.message}<br><br>🎉 <strong>Check your email!</strong> You should receive a test email shortly.`);
                     
                 } catch (error) {
                     console.error('🔧 Test failed:', error);
                     
-                    this.addMessage('bot', `
-                        ❌ <strong>Connection Test Failed!</strong><br><br>
-                        
-                        <div style="background: #f8d7da; padding: 12px; border-radius: 5px; border-left: 4px solid #e74c3c; margin: 10px 0;">
-                        <strong>Error:</strong> ${error.message}<br>
-                        <strong>URL:</strong> ${this.config.emailServerUrl}
-                        </div>
-                        
-                        <div style="background: #fff3cd; padding: 12px; border-radius: 5px; border-left: 4px solid #f39c12; margin: 10px 0;">
-                        <strong>💡 Troubleshooting:</strong><br>
-                        • Check if your Cloud Run service is running<br>
-                        • Verify the URL is correct<br>
-                        • Check Cloud Run logs for errors<br>
-                        • Fallback email options will still work
-                        </div>
-                    `);
+                    let troubleshootingAdvice = '';
+                    if (error.message.includes('Failed to fetch')) {
+                        troubleshootingAdvice = `
+                        <br><br><strong>🔍 Troubleshooting Steps:</strong><br>
+                        1. <strong>Check service status:</strong> Is gmail-bootcamp-service running?<br>
+                        2. <strong>Verify CORS:</strong> Service should allow requests from GitHub Pages<br>
+                        3. <strong>App password:</strong> Check if Gmail app password is correct<br>
+                        4. <strong>Gmail settings:</strong> Verify IMAP and 2-step verification<br>
+                        5. <strong>Test manually:</strong> Try visiting the service URL directly
+                        `;
+                    }
+                    
+                    this.addMessage('bot', `❌ <strong>Email Test Failed!</strong><br><strong>Error:</strong> ${error.message}<br><strong>Service URL:</strong> ${this.config.emailServerUrl}<br><strong>Status:</strong> Connection failed${troubleshootingAdvice}`);
                 }
                 
                 testButton.textContent = '📧 Test Email';
@@ -1789,7 +1778,7 @@ Are you still interested in progressing with this opportunity?`);
                     ${this.score >= 6 ? '• Schedule 30-minute Teams interview<br>• Send document requirements<br>• Add to candidate pipeline' : '• Send polite rejection email<br>• Offer future application opportunity'}<br><br>
                     
                     <strong>📧 Email Report:</strong><br>
-                    A comprehensive screening report has been sent to ${this.config.emailRecipient} via your Gmail integration service on Cloud Run.
+                    A comprehensive screening report has been sent directly to ${this.config.emailRecipient} via Gmail integration service. Check your inbox for the detailed candidate assessment.
                 `;
                 
                 reportDetails.innerHTML = reportHTML;
@@ -1810,9 +1799,9 @@ Are you still interested in progressing with this opportunity?`);
                     z-index: 1000; animation: slideUp 0.5s ease-out;
                 `;
                 audioInfo.innerHTML = `
-                    ✨ <strong>Production-Ready & Live!</strong><br>
-                    • Gmail integration deployed to Cloud Run<br>
-                    • Real-time email reports working<br>
+                    🎉 <strong>Production Ready!</strong><br>
+                    • Direct Gmail integration active<br>
+                    • Professional email reports<br>
                     • Course Q&A with sources<br>
                     • Internet fact-checking ready
                 `;
