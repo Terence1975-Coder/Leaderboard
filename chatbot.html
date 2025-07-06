@@ -1390,10 +1390,12 @@ Are you still interested in progressing with this opportunity?`);
             }
 
             handleFunding(response) {
+                console.log(`🔍 DEBUG: handleFunding called with response: "${response}" at step: ${this.currentStep}`);
+                
                 if (response.includes('No, none')) {
                     this.candidateData.fundingStatus = 'Eligible';
                     this.updateCriteria('funding', 'Pass', 'criteria-pass');
-                    this.updateCriteria('english', 'Pass', 'criteria-pass');
+                    // English level will be assessed at the end of screening
                     this.addMessage('bot', 'Perfect! Now, can I confirm your current employment status?');
                     this.currentStep = 'employment';
                     this.showOptions(['I\'m employed', 'I\'m self-employed', 'I\'m unemployed', 'I\'m a student']);
@@ -1635,10 +1637,20 @@ Are you still interested in progressing with this opportunity?`);
             }
 
             updateCriteria(criteria, status, className) {
+                // Debug logging for funding status updates
+                if (criteria === 'funding') {
+                    console.log(`🔍 DEBUG: Funding criteria updated to "${status}" at step "${this.currentStep}"`);
+                    console.log('🔍 DEBUG: Current candidate funding status:', this.candidateData.fundingStatus);
+                }
+                
                 const element = document.getElementById(criteria);
-                element.className = `criteria-item ${className}`;
-                element.querySelector('span:last-child').textContent = status;
-                this.updateScore();
+                if (element) {
+                    element.className = `criteria-item ${className}`;
+                    element.querySelector('span:last-child').textContent = status;
+                    this.updateScore();
+                } else {
+                    console.error(`❌ Element with ID "${criteria}" not found`);
+                }
             }
 
             updateScore() {
@@ -1930,6 +1942,13 @@ Are you still interested in progressing with this opportunity?`);
             completeAssessment() {
                 this.updateScore();
                 
+                // English proficiency is demonstrated by completing the screening successfully
+                if (this.candidateData.fundingStatus === 'Eligible') {
+                    this.updateCriteria('english', 'Pass', 'criteria-pass');
+                } else {
+                    this.updateCriteria('english', 'Not Assessed', 'criteria-item');
+                }
+                
                 this.sendEmail('assessment');
                 
                 const finalReport = document.getElementById('finalReport');
@@ -2021,4 +2040,3 @@ Are you still interested in progressing with this opportunity?`);
     </script>
 </body>
 </html>
-                    
