@@ -434,7 +434,7 @@
     <div class="container">
         <div class="header">
             <h1>🤖 AI Bootcamp Screening Assistant</h1>
-            <p>Live Gmail Integration - Ready for Production Use</p>
+            <p>Production System - Live Gmail Integration & Enhanced Workflow</p>
         </div>
         
         <div class="main-content">
@@ -491,12 +491,13 @@
                 
                 <div style="background: #e8f6f3; padding: 8px; border-radius: 5px; margin-bottom: 12px; font-size: 11px;">
                     <strong>🎉 Production Features:</strong><br>
-                    • 📧 Direct Gmail integration with CORS<br>
-                    • 🔐 App password authentication<br>
+                    • 📧 Direct Gmail integration working<br>
+                    • 🔐 Secure app password authentication<br>
                     • 🔍 Internet location fact-checking<br>
                     • 💬 Course Q&A with source references<br>
-                    • 🔊 Audio & voice features<br>
-                    • 📊 Professional HTML email reports
+                    • 🔊 Smart audio for assessment questions<br>
+                    • 📊 Professional HTML email reports<br>
+                    • 📋 Complete candidate detail collection
                 </div>
                 
                 <div class="criteria-item" id="location">
@@ -560,7 +561,7 @@
                 this.currentSpeech = null;
                 this.recognition = null;
                 this.candidateData = {
-                    name: 'John Smith',
+                    name: 'Applicant',
                     location: null,
                     ukResidency: null,
                     fundingStatus: null,
@@ -690,7 +691,7 @@
             }
 
             init() {
-                this.addMessage('bot', `Hi ${this.candidateData.name}, this is the BIT Group AI assistant calling about your application for our AI Business Productivity Bootcamp. I'll be conducting your initial screening today. Is now a good time to chat for about 10 minutes?`);
+                this.addMessage('bot', `Hi ${this.candidateData.name}, this is the BIT Group AI assistant reaching out to you about your application for our AI Business Productivity Bootcamp. I'll be conducting your initial screening today. Is now a good time to chat for about 10 minutes?`);
                 
                 setTimeout(() => {
                     this.addMessage('bot', '🌟 <strong>Enhanced Experience:</strong><br>• Optimized layout - no scrolling needed<br>• Ask course questions anytime during screening<br>• Type ANY UK location for fact-checking<br>• Full course information with source references<br>• Voice features and professional audio output');
@@ -856,6 +857,8 @@
                 
                 if (this.chatMode) {
                     this.handleCourseQuestion(question);
+                } else if (this.currentStep === 'collectDetails') {
+                    this.handleCollectDetails(question);
                 } else {
                     this.handleResponse(question);
                 }
@@ -1038,12 +1041,15 @@
                 
                 const isCourseQuestion = courseKeywords.some(keyword => lowerResponse.includes(keyword));
                 
+                // Critical screening steps that should NEVER be treated as course questions
+                const criticalSteps = ['location', 'ukResidency', 'funding', 'employment', 'employerFunding', 'schedule', 'interview'];
+                
                 if (this.chatMode) {
                     // In chat mode, handle as course question
                     this.handleCourseQuestion(response);
                     return;
-                } else if (isCourseQuestion && this.currentStep !== 'location' && this.currentStep !== 'ukResidency' && this.currentStep !== 'funding') {
-                    // If it's a course question during screening (but not during critical eligibility steps), answer it but continue screening
+                } else if (isCourseQuestion && !criticalSteps.includes(this.currentStep)) {
+                    // If it's a course question during screening (but not during critical steps), answer it but continue screening
                     this.addMessage('user', response);
                     this.addMessage('bot', '💡 <strong>Quick course info:</strong> Let me answer that, then we\'ll continue with your screening.');
                     
@@ -1094,11 +1100,17 @@
                     case 'employment':
                         this.handleEmployment(response);
                         break;
+                    case 'employerFunding':
+                        this.handleEmployerFunding(response);
+                        break;
                     case 'schedule':
                         this.handleSchedule(response);
                         break;
                     case 'interview':
                         this.handleInterview(response);
+                        break;
+                    case 'collectDetails':
+                        this.handleCollectDetails(response);
                         break;
                     case 'reschedule':
                         this.handleReschedule(response);
@@ -1354,15 +1366,20 @@ Are you still interested in progressing with this opportunity?`);
             }
 
             handleUKResidency(response) {
-                if (response.includes('Yes')) {
+                if (response.includes('Yes') && response.includes('years')) {
                     this.candidateData.ukResidency = true;
                     this.updateCriteria('ukResidency', 'Pass', 'criteria-pass');
                     this.addMessage('bot', 'Great! Are you currently on any of the following: a spouse visa, international student visa, apprenticeship, or any other government-funded learning programme?');
                     this.currentStep = 'funding';
                     this.showOptions(['No, none of those', 'Yes, I\'m on a visa', 'Yes, I\'m on an apprenticeship', 'Yes, other government programme']);
-                } else if (response.includes('waiting list')) {
+                } else if (response.includes('waiting list') || response.includes('add me to waiting')) {
+                    this.candidateData.devonWaitingList = true;
                     this.addMessage('bot', 'Excellent! I\'ve noted you for the Devon waiting list. Now, have you been living in the UK for at least the past 3 years?');
                     this.showOptions(['Yes, more than 3 years', 'Yes, exactly 3 years', 'No, less than 3 years']);
+                } else if (response.includes('not interested')) {
+                    this.addMessage('bot', 'I understand. Thank you for your time and interest in the programme. Feel free to apply again in the future if circumstances change.');
+                    this.completeAssessment();
+                    return;
                 } else {
                     this.candidateData.ukResidency = false;
                     this.updateCriteria('ukResidency', 'Fail', 'criteria-fail');
@@ -1398,7 +1415,7 @@ Are you still interested in progressing with this opportunity?`);
                     this.showOptions(['Afternoon sessions work better', 'Evening sessions work better', 'Either would work', 'That is too much commitment']);
                 } else if (response.includes('employed')) {
                     this.addMessage('bot', 'Would your employer be willing to co-fund your place? The employer contribution is £297.98. If not, we can help you apply for a new role where you can gain these skills through supported job matching.');
-                    this.currentStep = 'schedule';
+                    this.currentStep = 'employerFunding';
                     this.showOptions(['Yes, employer will co-fund', 'No, but help me find new role', 'I will pay myself', 'That is too expensive']);
                 } else if (response.includes('unemployed')) {
                     this.addMessage('bot', 'No problem - this programme is fully funded for you. Can I ask how long you have been unemployed and what kind of roles you are looking for?');
@@ -1411,12 +1428,43 @@ Are you still interested in progressing with this opportunity?`);
                 }
             }
 
+            handleEmployerFunding(response) {
+                // Store the employer funding response for the report
+                this.candidateData.employerFunding = response;
+                console.log('📋 Employer funding response recorded:', response);
+                
+                if (response.includes('co-fund') || response.includes('pay myself')) {
+                    this.addMessage('bot', 'Excellent! The programme starts on 21 July and runs until 9 October. It includes 3 x 2-hour online sessions per week. Would afternoon sessions (4-6pm) or evening sessions (7-9pm) work better for you?');
+                    this.currentStep = 'schedule';
+                    this.showOptions(['Afternoon sessions work better', 'Evening sessions work better', 'Either would work', 'That is too much commitment']);
+                } else if (response.includes('find new role')) {
+                    this.addMessage('bot', 'Perfect! We can help you find a new role where these AI skills will be valuable. Our job matching service connects you with employers who value these capabilities. The programme is fully funded for job seekers. Would afternoon or evening sessions work better for you?');
+                    this.currentStep = 'schedule';
+                    this.showOptions(['Afternoon sessions work better', 'Evening sessions work better', 'Either would work', 'I need to discuss timing']);
+                } else if (response.includes('too expensive')) {
+                    this.addMessage('bot', 'I understand the cost concern. We also offer job matching services to help you find a role where the employer would fund this training. Would you be interested in exploring new opportunities?');
+                    this.currentStep = 'schedule';
+                    this.showOptions(['Yes, help me find a new role', 'No, I\'ll stay in current job', 'I need to think about it']);
+                } else {
+                    this.addMessage('bot', 'No problem. Take some time to consider your options. The programme starts on 21 July, so please let us know your decision soon.');
+                    this.currentStep = 'schedule';
+                    this.showOptions(['I\'ll discuss with my employer', 'Help me find a new role instead', 'I\'m not interested anymore']);
+                }
+            }
+
             handleSchedule(response) {
                 this.candidateData.availability = response;
                 
-                if (response.includes('too much') || response.includes('too expensive')) {
+                if (response.includes('too much') || response.includes('too expensive') || response.includes('not interested')) {
                     this.candidateData.interestLevel = 2;
                     this.addMessage('bot', 'I understand. Perhaps this is not the right time for you. Thank you for your interest, and feel free to apply again in the future when your circumstances change.');
+                    this.completeAssessment();
+                    return;
+                }
+                
+                if (response.includes('discuss with') || response.includes('think about')) {
+                    this.candidateData.interestLevel += 1;
+                    this.addMessage('bot', 'That\'s perfectly reasonable. Take your time to consider it. The programme starts on 21 July, so please let us know your decision by 15 July. Thank you for your interest!');
                     this.completeAssessment();
                     return;
                 }
@@ -1430,19 +1478,160 @@ Are you still interested in progressing with this opportunity?`);
             }
 
             handleInterview(response) {
-                if (response.includes('Yes, book')) {
-                    this.addMessage('bot', 'Perfect! I will send you the interview confirmation by email. Please have ready: a form of photo ID, your National Insurance number, and proof of address. Thank you for your time today! We will be in touch soon with your interview details.');
-                    this.candidateData.interestLevel += 1;
-                } else if (response.includes('documents')) {
+                if (response.includes('Yes, book') || response.includes('book the interview') || response.includes('book it now')) {
+                    this.addMessage('bot', 'Excellent! To book your interview, I need to confirm a few details. Please fill in the information below:');
+                    
+                    setTimeout(() => {
+                        // Hide response buttons and create individual input fields
+                        this.responseButtons.innerHTML = '';
+                        this.textInputRow.style.display = 'none';
+                        
+                        // Create individual input fields
+                        const inputContainer = document.createElement('div');
+                        inputContainer.id = 'personalDetailsContainer';
+                        inputContainer.style.cssText = `
+                            background: #f8f9fa;
+                            border-radius: 15px;
+                            padding: 20px;
+                            margin: 15px 0;
+                            border: 2px solid #e0e0e0;
+                        `;
+                        
+                        inputContainer.innerHTML = `
+                            <h4 style="color: #2c3e50; margin-bottom: 15px; text-align: center;">📋 Personal Details</h4>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #2c3e50;">
+                                    👤 First Name:
+                                </label>
+                                <input type="text" id="firstName" placeholder="Enter your first name" 
+                                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #2c3e50;">
+                                    👥 Surname:
+                                </label>
+                                <input type="text" id="surname" placeholder="Enter your surname" 
+                                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #2c3e50;">
+                                    📱 Mobile Number:
+                                </label>
+                                <input type="tel" id="mobile" placeholder="07123456789" 
+                                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #2c3e50;">
+                                    📧 Email Address:
+                                </label>
+                                <input type="email" id="email" placeholder="your.email@example.com" 
+                                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                            </div>
+                            
+                            <div style="text-align: center;">
+                                <button onclick="window.chatBot.submitPersonalDetails()" 
+                                        style="background: #27ae60; color: white; border: none; padding: 15px 30px; 
+                                               border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: bold;
+                                               transition: background 0.3s ease;">
+                                    📅 Book My Interview
+                                </button>
+                            </div>
+                        `;
+                        
+                        // Add the container to the input section
+                        const inputSection = document.querySelector('.input-section');
+                        inputSection.appendChild(inputContainer);
+                        
+                        this.currentStep = 'collectDetails';
+                    }, 1000);
+                    
+                } else if (response.includes('documents') || response.includes('What documents')) {
                     this.addMessage('bot', 'You will need: a form of photo ID, your National Insurance number, and proof of address like a utility bill or bank statement. Shall I book your interview now?');
                     this.showOptions(['Yes, book it now', 'I need to find those documents first']);
                     return;
+                } else if (response.includes('find those documents')) {
+                    this.addMessage('bot', 'No problem! Take your time to gather those documents. The programme starts on 21 July, so please apply again once you have everything ready. Thank you for your interest!');
+                    this.candidateData.interestLevel -= 1;
+                    this.completeAssessment();
                 } else {
                     this.addMessage('bot', 'That is perfectly fine. Take your time to consider it. The programme starts on 21 July, so please let us know your decision soon. Thank you for your interest!');
                     this.candidateData.interestLevel -= 1;
+                    this.completeAssessment();
+                }
+            }
+
+            submitPersonalDetails() {
+                const firstName = document.getElementById('firstName').value.trim();
+                const surname = document.getElementById('surname').value.trim();
+                const mobile = document.getElementById('mobile').value.trim();
+                const email = document.getElementById('email').value.trim();
+                
+                // Validation
+                const errors = [];
+                if (!firstName) errors.push('First Name');
+                if (!surname) errors.push('Surname');
+                if (!mobile) errors.push('Mobile Number');
+                if (!email || !email.includes('@')) errors.push('Valid Email Address');
+                
+                if (errors.length > 0) {
+                    this.addMessage('bot', `❌ <strong>Please complete the following fields:</strong><br>• ${errors.join('<br>• ')}<br><br>All fields are required to book your interview.`);
+                    return;
                 }
                 
+                // Store the personal details
+                const personalDetails = {
+                    firstName: firstName,
+                    surname: surname,
+                    mobile: mobile,
+                    email: email
+                };
+                
+                this.candidateData.personalDetails = personalDetails;
+                this.candidateData.name = `${firstName} ${surname}`;
+                
+                // Remove the form and show confirmation
+                document.getElementById('personalDetailsContainer').remove();
+                
+                this.addMessage('user', `Name: ${firstName} ${surname}, Mobile: ${mobile}, Email: ${email}`);
+                this.addMessage('bot', `Perfect! I have your details:<br><strong>Name:</strong> ${firstName} ${surname}<br><strong>Mobile:</strong> ${mobile}<br><strong>Email:</strong> ${email}<br><br>Your 30-minute Teams interview will be confirmed by email within 2 hours. Please have ready: photo ID, National Insurance number, and proof of address. Thank you for your time today!`);
+                
+                this.candidateData.interestLevel += 2;
                 this.completeAssessment();
+            }
+
+            handleCollectDetails(response) {
+                // This method is now mainly for text-based input (legacy support)
+                // The new submitPersonalDetails() method handles the individual input boxes
+                
+                // Parse the personal details with more flexible matching
+                const nameMatch = response.match(/name:\s*([^\n\r,]+?)(?:\s+surname:|$)/i);
+                const surnameMatch = response.match(/surname:\s*([^\n\r,]+?)(?:\s+mobile:|$)/i);
+                const mobileMatch = response.match(/mobile:\s*([^\n\r,]+?)(?:\s+email:|$)/i);
+                const emailMatch = response.match(/email:\s*([^\s@,]+@[^\s@,]+\.[^\s@,\n\r]+)/i);
+                
+                if (nameMatch && surnameMatch && mobileMatch && emailMatch) {
+                    const personalDetails = {
+                        firstName: nameMatch[1].trim(),
+                        surname: surnameMatch[1].trim(),
+                        mobile: mobileMatch[1].trim(),
+                        email: emailMatch[1].trim()
+                    };
+                    
+                    this.candidateData.personalDetails = personalDetails;
+                    this.candidateData.name = `${personalDetails.firstName} ${personalDetails.surname}`;
+                    
+                    this.addMessage('bot', `Perfect! I have your details:<br><strong>Name:</strong> ${personalDetails.firstName} ${personalDetails.surname}<br><strong>Mobile:</strong> ${personalDetails.mobile}<br><strong>Email:</strong> ${personalDetails.email}<br><br>Your 30-minute Teams interview will be confirmed by email within 2 hours. Please have ready: photo ID, National Insurance number, and proof of address. Thank you for your time today!`);
+                    
+                    this.candidateData.interestLevel += 2;
+                    this.completeAssessment();
+                } else {
+                    // More helpful error message with examples
+                    this.addMessage('bot', 'I couldn\'t parse all the details. Please use the form above or try one of these formats:<br><br><strong>Option 1:</strong> Name: John Surname: Smith Mobile: 07123456789 Email: john@email.com<br><br><strong>Option 2:</strong><br>Name: Sarah<br>Surname: Johnson<br>Mobile: 07987654321<br>Email: sarah.johnson@email.com<br><br>Please try again:');
+                }
             }
 
             updateCriteria(criteria, status, className) {
@@ -1606,11 +1795,13 @@ Are you still interested in progressing with this opportunity?`);
                             ukResidency: this.candidateData.ukResidency ? 'Eligible (3+ years)' : 'Not eligible',
                             fundingStatus: this.candidateData.fundingStatus || 'Not assessed',
                             employmentStatus: this.candidateData.employmentStatus || 'Not assessed',
+                            employerFunding: this.candidateData.employerFunding || 'Not applicable',
                             availability: this.candidateData.availability || 'Not assessed',
                             interestLevel: this.candidateData.interestLevel,
                             overallScore: this.score,
                             responses: this.candidateData.responses,
                             rescheduleType: this.candidateData.rescheduleType,
+                            personalDetails: this.candidateData.personalDetails || null,
                             timestamp: new Date().toISOString(),
                             recommendation: this.score >= 8 ? 'HIGHLY SUITABLE - Schedule interview immediately' : 
                                           this.score >= 6 ? 'SUITABLE - Standard processing' : 
@@ -1770,6 +1961,8 @@ Are you still interested in progressing with this opportunity?`);
                     • UK Residency: ${this.candidateData.ukResidency ? 'Eligible' : 'Not eligible'}<br>
                     • Funding Status: ${this.candidateData.fundingStatus || 'Not assessed'}<br>
                     • Employment: ${this.candidateData.employmentStatus || 'Not assessed'}<br>
+                    • Employer Funding: ${this.candidateData.employerFunding || 'Not applicable'}<br>
+                    • Availability: ${this.candidateData.availability || 'Not assessed'}<br>
                     • Interest Level: ${this.candidateData.interestLevel}/10<br>
                     • Overall Score: ${this.score}/10<br>
                     • Reschedule Type: ${this.candidateData.rescheduleType || 'N/A'}<br><br>
@@ -1799,11 +1992,11 @@ Are you still interested in progressing with this opportunity?`);
                     z-index: 1000; animation: slideUp 0.5s ease-out;
                 `;
                 audioInfo.innerHTML = `
-                    🎉 <strong>Production Ready!</strong><br>
+                    🎉 <strong>Enhanced Features Active!</strong><br>
                     • Direct Gmail integration active<br>
                     • Professional email reports<br>
                     • Course Q&A with sources<br>
-                    • Internet fact-checking ready
+                    • Smart voice for assessments only
                 `;
                 document.body.appendChild(audioInfo);
                 
@@ -1828,3 +2021,4 @@ Are you still interested in progressing with this opportunity?`);
     </script>
 </body>
 </html>
+                    
